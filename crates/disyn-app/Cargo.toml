@@ -1,0 +1,19 @@
+[package]
+name = "disyn-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono.workspace = true
+clap.workspace = true
+disyn-core = { path = "../disyn-core" }
+disyn-memory = { path = "../disyn-memory" }
+disyn-neural = { path = "../disyn-neural" }
+disyn-runtime = { path = "../disyn-runtime" }
+disyn-symbolic = { path = "../disyn-symbolic" }
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

@@ -1,0 +1,122 @@
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Observation {
+    pub source: String,
+    pub payload: serde_json::Value,
+    pub timestamp: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Facts {
+    pub entities: Vec<String>,
+    pub relations: Vec<(String, String, String)>,
+    pub confidence: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Episode {
+    pub observation: Observation,
+    pub outcome: Option<String>,
+    pub timestamp: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MemoryContext {
+    pub relevant_episodes: Vec<Episode>,
+    pub summary: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CostEstimate {
+    pub input_tokens: u32,
+    pub output_tokens: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlannedStep {
+    pub action: String,
+    pub parameters: serde_json::Value,
+    pub estimated_cost: CostEstimate,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlanDraft {
+    pub steps: Vec<PlannedStep>,
+    pub rationale: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Severity {
+    Blocking,
+    Warning,
+    Info,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Violation {
+    pub rule_id: String,
+    pub severity: Severity,
+    pub message: String,
+    pub step_index: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VerificationReport {
+    pub passed: bool,
+    pub violations: Vec<Violation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApprovedPlan {
+    pub steps: Vec<PlannedStep>,
+    pub verification: VerificationReport,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceUsage {
+    pub total_tokens: u64,
+    pub wall_time_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StepResult {
+    pub step_index: usize,
+    pub success: bool,
+    pub output: serde_json::Value,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExecutionReport {
+    pub results: Vec<StepResult>,
+    pub total_cost: ResourceUsage,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn observation_round_trips_through_serde() {
+        let obs = Observation {
+            source: "stdin".into(),
+            payload: serde_json::json!({"query": "hello"}),
+            timestamp: chrono::Utc::now(),
+        };
+        let json = serde_json::to_string(&obs).unwrap();
+        let back: Observation = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.source, "stdin");
+    }
+
+    #[test]
+    fn verification_report_passed_has_no_violations() {
+        let report = VerificationReport {
+            passed: true,
+            violations: vec![],
+        };
+        assert!(report.passed);
+        assert!(report.violations.is_empty());
+    }
+}
