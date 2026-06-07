@@ -1,0 +1,13 @@
+ignore_functions = ["main", "run"]
+
+[duplicates]
+detect_dead_code = false
+
+[weights]
+iosp         = 0.22
+complexity   = 0.18
+dry          = 0.13
+srp          = 0.18
+coupling     = 0.09
+test_quality = 0.10
+architecture = 0.10
