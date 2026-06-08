@@ -84,6 +84,7 @@ impl Verifier for RuleSetVerifier {
 mod tests {
     use super::*;
     use disyn_core::types::{CostEstimate, PlannedStep};
+    use uuid::Uuid;
 
     #[test]
     fn empty_plan_passes() {
@@ -101,6 +102,7 @@ mod tests {
         let v = RuleSetVerifier::default();
         let draft = PlanDraft {
             steps: vec![PlannedStep {
+                idempotency_key: Uuid::nil(),
                 action: "".into(),
                 parameters: serde_json::json!({}),
                 estimated_cost: CostEstimate {

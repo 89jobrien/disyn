@@ -115,6 +115,7 @@ impl ProposalEngine for OllamaProposalEngine {
             .map(|arr| {
                 arr.iter()
                     .map(|s| PlannedStep {
+                        idempotency_key: uuid::Uuid::new_v4(),
                         action: s["action"].as_str().unwrap_or("unknown").to_string(),
                         parameters: s["parameters"].clone(),
                         estimated_cost: CostEstimate {

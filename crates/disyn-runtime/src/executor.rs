@@ -29,6 +29,7 @@ impl ActionExecutor for ShellExecutor {
                 .await
                 .map_err(|e| disyn_core::Error::Execution(e.to_string()))?;
             results.push(StepResult {
+                idempotency_key: step.idempotency_key,
                 step_index: i,
                 success: output.status.success(),
                 output: serde_json::json!({

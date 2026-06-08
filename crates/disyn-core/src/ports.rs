@@ -19,6 +19,8 @@ pub trait Verifier: Send + Sync {
     fn verify(&self, draft: &PlanDraft) -> VerificationReport;
 }
 
+/// Implementations must preserve `PlannedStep::idempotency_key` for steps
+/// with identical actions. New steps introduced by repair get fresh UUIDs.
 pub trait RepairEngine: Send + Sync {
     fn repair(&self, draft: &PlanDraft, report: &VerificationReport) -> Option<PlanDraft>;
 }

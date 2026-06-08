@@ -58,6 +58,7 @@ pub struct CostEstimate {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlannedStep {
+    pub idempotency_key: uuid::Uuid,
     pub action: String,
     pub parameters: serde_json::Value,
     pub estimated_cost: CostEstimate,
@@ -107,6 +108,7 @@ pub struct ResourceUsage {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StepResult {
+    pub idempotency_key: uuid::Uuid,
     pub step_index: usize,
     pub success: bool,
     pub output: serde_json::Value,

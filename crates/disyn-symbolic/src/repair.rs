@@ -37,6 +37,7 @@ impl RepairEngine for PatternRepairEngine {
 mod tests {
     use super::*;
     use disyn_core::types::{CostEstimate, Severity, VerificationLayer, Violation};
+    use uuid::Uuid;
 
     #[test]
     fn removes_blocking_steps() {
@@ -44,6 +45,7 @@ mod tests {
         let draft = PlanDraft {
             steps: vec![
                 PlannedStep {
+                    idempotency_key: Uuid::nil(),
                     action: "".into(),
                     parameters: serde_json::json!({}),
                     estimated_cost: CostEstimate {
@@ -53,6 +55,7 @@ mod tests {
                     },
                 },
                 PlannedStep {
+                    idempotency_key: Uuid::nil(),
                     action: "echo hello".into(),
                     parameters: serde_json::json!({}),
                     estimated_cost: CostEstimate {
