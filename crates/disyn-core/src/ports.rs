@@ -2,8 +2,9 @@ use async_trait::async_trait;
 
 use crate::Result;
 use crate::types::{
-    ApprovedPlan, ExecutionReport, Facts, MemoryContext, Observation, PlanDraft,
-    RetrievalStrategy, SymbolicAnchor, VerificationReport, WeightedPassage,
+    ApprovedPlan, DeceptionReport, ExecutionReport, Facts, FormalSpec, GroundedExtraction,
+    MemoryContext, Observation, PlanDraft, ProofVerdict, RetrievalStrategy, SymbolicAnchor,
+    VerificationReport, WeightedPassage,
 };
 
 #[async_trait]
@@ -50,6 +51,18 @@ pub trait GraphStore: Send + Sync {
 
 pub trait TelemetrySink: Send + Sync {
     fn emit(&self, event: &SpanEvent);
+}
+
+pub trait FormalVerifier: Send + Sync {
+    fn synthesize(&self, extraction: &GroundedExtraction) -> FormalSpec;
+    fn verify_spec(&self, spec: &FormalSpec, extraction: &GroundedExtraction) -> ProofVerdict;
+    fn scan_deception(&self, _extraction: &GroundedExtraction) -> DeceptionReport {
+        DeceptionReport {
+            detected: false,
+            level: None,
+            evidence_fact_ids: vec![],
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

@@ -172,6 +172,69 @@ impl Default for RetrievalStrategy {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AtomicFact {
+    pub id: String,
+    pub query: String,
+    pub layer: u8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroundedFact {
+    pub fact: AtomicFact,
+    pub value: bool,
+    pub evidence: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroundedExtraction {
+    pub facts: Vec<GroundedFact>,
+    pub trajectory_span: std::ops::Range<usize>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ClauseCombinator {
+    And,
+    Or,
+    Not,
+    Leaf,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SafetyClause {
+    pub fact_id: String,
+    pub advisory: bool,
+    pub combinator: ClauseCombinator,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormalSpec {
+    pub clauses: Vec<SafetyClause>,
+    pub formal_text: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ProofVerdict {
+    Safe,
+    Unsafe { violated_facts: Vec<String> },
+    Unknown { reason: String },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DeceptionLevel {
+    L1SimpleOmission,
+    L2SelectiveReporting,
+    L3FabricatedProvenance,
+    L4MultiStepDeception,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeceptionReport {
+    pub detected: bool,
+    pub level: Option<DeceptionLevel>,
+    pub evidence_fact_ids: Vec<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
