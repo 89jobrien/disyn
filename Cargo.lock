@@ -251,6 +251,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
@@ -285,6 +286,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
@@ -305,6 +307,7 @@ version = "0.1.0"
 dependencies = [
  "disyn-core",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]

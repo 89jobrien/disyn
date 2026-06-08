@@ -47,7 +47,10 @@ impl RuleSetVerifier {
     }
 
     pub fn register(&mut self, rule: impl LayerRule + 'static) {
-        self.rules.entry(rule.layer()).or_default().push(Box::new(rule));
+        self.rules
+            .entry(rule.layer())
+            .or_default()
+            .push(Box::new(rule));
     }
 }
 
