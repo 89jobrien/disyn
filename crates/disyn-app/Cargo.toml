@@ -14,6 +14,7 @@ disyn-neural = { path = "../disyn-neural" }
 disyn-runtime = { path = "../disyn-runtime" }
 disyn-symbolic = { path = "../disyn-symbolic" }
 serde_json.workspace = true
+uuid.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
