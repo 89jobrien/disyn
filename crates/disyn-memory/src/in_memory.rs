@@ -29,6 +29,7 @@ impl MemoryStore for InMemoryStore {
         Ok(MemoryContext {
             relevant_episodes: vec![],
             summary: None,
+            weighted_passages: vec![],
         })
     }
 

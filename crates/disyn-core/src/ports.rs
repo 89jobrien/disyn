@@ -2,7 +2,8 @@ use async_trait::async_trait;
 
 use crate::Result;
 use crate::types::{
-    ApprovedPlan, ExecutionReport, Facts, MemoryContext, Observation, PlanDraft, VerificationReport,
+    ApprovedPlan, ExecutionReport, Facts, MemoryContext, Observation, PlanDraft,
+    RetrievalStrategy, SymbolicAnchor, VerificationReport, WeightedPassage,
 };
 
 #[async_trait]
@@ -34,6 +35,17 @@ pub trait MemoryStore: Send + Sync {
 #[async_trait]
 pub trait ActionExecutor: Send + Sync {
     async fn execute(&self, plan: &ApprovedPlan) -> Result<ExecutionReport>;
+}
+
+#[async_trait]
+pub trait GraphStore: Send + Sync {
+    async fn index(&self, facts: &Facts) -> Result<()>;
+    async fn traverse(
+        &self,
+        facts: &Facts,
+        strategy: &RetrievalStrategy,
+    ) -> Result<Vec<WeightedPassage>>;
+    fn resolve_anchors(&self, facts: &Facts) -> Vec<SymbolicAnchor>;
 }
 
 pub trait TelemetrySink: Send + Sync {

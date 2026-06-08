@@ -41,6 +41,7 @@ pub struct Episode {
 pub struct MemoryContext {
     pub relevant_episodes: Vec<Episode>,
     pub summary: Option<String>,
+    pub weighted_passages: Vec<WeightedPassage>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -119,6 +120,56 @@ pub struct StepResult {
 pub struct ExecutionReport {
     pub results: Vec<StepResult>,
     pub total_cost: ResourceUsage,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KgNode {
+    pub id: String,
+    pub label: String,
+    pub salience: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KgEdge {
+    pub subject: String,
+    pub predicate: String,
+    pub object: String,
+    pub weight: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SymbolicAnchor {
+    pub entity_id: String,
+    pub anchor_strength: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WeightedPassage {
+    pub content: String,
+    pub source_episode_index: usize,
+    pub triple_match_score: f32,
+    pub final_weight: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RetrievalStrategy {
+    pub max_hops: u8,
+    pub top_k: usize,
+    pub anchors: Vec<SymbolicAnchor>,
+    pub edge_prune_threshold: f32,
+    pub passage_boost: f32,
+}
+
+impl Default for RetrievalStrategy {
+    fn default() -> Self {
+        Self {
+            max_hops: 3,
+            top_k: 5,
+            anchors: vec![],
+            edge_prune_threshold: 0.1,
+            passage_boost: 1.5,
+        }
+    }
 }
 
 #[cfg(test)]
