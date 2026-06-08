@@ -53,7 +53,7 @@ async fn main() -> disyn_core::Result<()> {
     let mut orchestrator = Orchestrator {
         fact_extractor,
         proposal_engine,
-        verifier: Box::new(RuleSetVerifier),
+        verifier: Box::new(RuleSetVerifier::default()),
         repair_engine: Box::new(PatternRepairEngine),
         memory: Box::new(InMemoryStore::new()),
         executor: Box::new(ShellExecutor::new()),

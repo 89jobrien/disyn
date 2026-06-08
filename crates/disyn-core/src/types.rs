@@ -1,6 +1,21 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[repr(u8)]
+pub enum VerificationLayer {
+    L0Format = 0,
+    L1DataSource = 1,
+    L2UserConstraints = 2,
+    L3ToolContract = 3,
+    L4Provenance = 4,
+    L5Temporal = 5,
+    L6Resource = 6,
+    L7Semantic = 7,
+    L8Mathematical = 8,
+    L9Location = 9,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Observation {
     pub source: String,
@@ -57,6 +72,7 @@ pub enum Severity {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Violation {
     pub rule_id: String,
+    pub layer: VerificationLayer,
     pub severity: Severity,
     pub message: String,
     pub step_index: usize,

@@ -36,7 +36,7 @@ impl RepairEngine for PatternRepairEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use disyn_core::types::{CostEstimate, Severity, Violation};
+    use disyn_core::types::{CostEstimate, Severity, VerificationLayer, Violation};
 
     #[test]
     fn removes_blocking_steps() {
@@ -66,6 +66,7 @@ mod tests {
             passed: false,
             violations: vec![Violation {
                 rule_id: "non-empty-action".into(),
+                layer: VerificationLayer::L0Format,
                 severity: Severity::Blocking,
                 message: "empty".into(),
                 step_index: 0,
