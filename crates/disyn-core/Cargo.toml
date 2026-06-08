@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Domain types, port traits, and errors for the disyn agent pipeline"
+repository = "https://github.com/89jobrien/disyn"
 
 [dependencies]
 async-trait.workspace = true

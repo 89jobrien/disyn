@@ -1,0 +1,19 @@
+[registries.crates-io]
+confirm = false
+
+[registries.cratebox]
+cargo_name = "cratebox"
+api_url = "http://100.105.75.7:3000/api/packages/joe/cargo"
+confirm = false
+
+[pipelines.default]
+stages = ["crates-io", "cratebox"]
+
+autobump = "patch"
+
+[forge]
+type = "github"
+url = "https://github.com"
+owner = "89jobrien"
+repo = "disyn"
+token_env = "GITHUB_TOKEN"

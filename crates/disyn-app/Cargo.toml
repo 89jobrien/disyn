@@ -4,15 +4,17 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Orchestrator and CLI for the disyn hybrid symbolic-neural agent pipeline"
+repository = "https://github.com/89jobrien/disyn"
 
 [dependencies]
 chrono.workspace = true
 clap.workspace = true
-disyn-core = { path = "../disyn-core" }
-disyn-memory = { path = "../disyn-memory" }
-disyn-neural = { path = "../disyn-neural" }
-disyn-runtime = { path = "../disyn-runtime" }
-disyn-symbolic = { path = "../disyn-symbolic" }
+disyn-core = { path = "../disyn-core", version = "0.1.0" }
+disyn-memory = { path = "../disyn-memory", version = "0.1.0" }
+disyn-neural = { path = "../disyn-neural", version = "0.1.0" }
+disyn-runtime = { path = "../disyn-runtime", version = "0.1.0" }
+disyn-symbolic = { path = "../disyn-symbolic", version = "0.1.0" }
 serde_json.workspace = true
 uuid.workspace = true
 tokio.workspace = true

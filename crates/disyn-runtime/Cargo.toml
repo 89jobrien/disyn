@@ -4,10 +4,12 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Budget manager, telemetry, and shell executor for the disyn agent pipeline"
+repository = "https://github.com/89jobrien/disyn"
 
 [dependencies]
 async-trait.workspace = true
-disyn-core = { path = "../disyn-core" }
+disyn-core = { path = "../disyn-core", version = "0.1.0" }
 serde_json.workspace = true
 tokio = { workspace = true, features = ["process"] }
 tracing.workspace = true
