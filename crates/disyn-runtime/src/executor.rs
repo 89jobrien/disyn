@@ -46,6 +46,8 @@ impl ActionExecutor for ShellExecutor {
             results,
             total_cost: ResourceUsage {
                 total_tokens: 0,
+                symbolic_tokens: 0,
+                neural_tokens: 0,
                 wall_time_ms: 0,
             },
         })

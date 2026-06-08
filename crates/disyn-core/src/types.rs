@@ -43,8 +43,15 @@ pub struct MemoryContext {
     pub summary: Option<String>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CostClass {
+    Symbolic,
+    Neural,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CostEstimate {
+    pub class: Option<CostClass>,
     pub input_tokens: u32,
     pub output_tokens: u32,
 }
@@ -93,6 +100,8 @@ pub struct ApprovedPlan {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResourceUsage {
     pub total_tokens: u64,
+    pub symbolic_tokens: u64,
+    pub neural_tokens: u64,
     pub wall_time_ms: u64,
 }
 

@@ -58,7 +58,7 @@ async fn main() -> disyn_core::Result<()> {
         memory: Box::new(InMemoryStore::new()),
         executor: Box::new(ShellExecutor::new()),
         telemetry: Box::new(TracingSink::init()),
-        budget: BudgetManager::new(cfg.max_tokens, 1, MAX_REPAIR_ATTEMPTS),
+        budget: BudgetManager::new(cfg.max_tokens, 1, MAX_REPAIR_ATTEMPTS, cfg.max_tokens),
     };
 
     let input = std::io::read_to_string(std::io::stdin())

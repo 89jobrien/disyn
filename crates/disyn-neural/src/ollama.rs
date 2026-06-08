@@ -118,6 +118,7 @@ impl ProposalEngine for OllamaProposalEngine {
                         action: s["action"].as_str().unwrap_or("unknown").to_string(),
                         parameters: s["parameters"].clone(),
                         estimated_cost: CostEstimate {
+                            class: Some(disyn_core::types::CostClass::Neural),
                             input_tokens: 0,
                             output_tokens: 0,
                         },

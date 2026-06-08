@@ -47,6 +47,7 @@ mod tests {
                     action: "".into(),
                     parameters: serde_json::json!({}),
                     estimated_cost: CostEstimate {
+                        class: Some(disyn_core::types::CostClass::Symbolic),
                         input_tokens: 0,
                         output_tokens: 0,
                     },
@@ -55,6 +56,7 @@ mod tests {
                     action: "echo hello".into(),
                     parameters: serde_json::json!({}),
                     estimated_cost: CostEstimate {
+                        class: Some(disyn_core::types::CostClass::Symbolic),
                         input_tokens: 10,
                         output_tokens: 5,
                     },
