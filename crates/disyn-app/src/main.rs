@@ -1,6 +1,3 @@
-mod config;
-mod orchestrator;
-
 use clap::Parser;
 use disyn_core::types::Observation;
 use disyn_memory::InMemoryStore;
@@ -11,8 +8,8 @@ use disyn_neural::{
 use disyn_runtime::{BudgetManager, ShellExecutor, TracingSink};
 use disyn_symbolic::{PatternRepairEngine, RuleSetVerifier};
 
-use config::Config;
-use orchestrator::Orchestrator;
+use disyn_app::config::Config;
+use disyn_app::orchestrator::Orchestrator;
 
 const MAX_REPAIR_ATTEMPTS: u32 = 3;
 
