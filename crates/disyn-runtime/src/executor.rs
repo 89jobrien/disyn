@@ -20,8 +20,10 @@ impl Default for ShellExecutor {
 #[async_trait]
 impl ActionExecutor for ShellExecutor {
     async fn execute(&self, plan: &ApprovedPlan) -> Result<ExecutionReport> {
+        // TODO: Track wall time and token usage per step and populate total_cost in ExecutionReport.
         let mut results = Vec::new();
         for (i, step) in plan.steps.iter().enumerate() {
+            // TODO: Apply a per-step timeout to prevent shell commands from hanging indefinitely.
             let output = tokio::process::Command::new("sh")
                 .arg("-c")
                 .arg(&step.action)

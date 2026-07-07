@@ -5,6 +5,7 @@ use disyn_core::Result;
 use disyn_core::ports::MemoryStore;
 use disyn_core::types::{ExecutionReport, Facts, MemoryContext};
 
+// TODO: Implement a capacity limit and eviction policy to prevent unbounded memory growth.
 pub struct InMemoryStore {
     episodes: Mutex<Vec<ExecutionReport>>,
 }
@@ -26,6 +27,8 @@ impl Default for InMemoryStore {
 #[async_trait]
 impl MemoryStore for InMemoryStore {
     async fn retrieve(&self, _facts: &Facts) -> Result<MemoryContext> {
+        // TODO: Implement semantic retrieval — score stored episodes against facts and return the
+        // most relevant ones instead of always returning an empty context.
         Ok(MemoryContext {
             relevant_episodes: vec![],
             summary: None,

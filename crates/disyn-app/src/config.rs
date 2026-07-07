@@ -8,6 +8,8 @@ pub struct Config {
     pub provider: String,
 
     /// OpenAI API key
+    // TODO: Validate that api_key is non-empty at startup when provider == "openai" and emit a
+    // clear error rather than propagating a mid-run Inference error.
     #[arg(long, env = "OPENAI_API_KEY", default_value = "")]
     pub api_key: String,
 

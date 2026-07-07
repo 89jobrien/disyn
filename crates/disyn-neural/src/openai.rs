@@ -3,6 +3,7 @@ use disyn_core::ports::{FactExtractor, ProposalEngine};
 use disyn_core::types::{CostEstimate, Facts, MemoryContext, Observation, PlanDraft, PlannedStep};
 use disyn_core::{Error, Result};
 
+// TODO: Parse confidence from the LLM response instead of using a fixed default.
 const DEFAULT_CONFIDENCE: f32 = 0.5;
 
 #[derive(Clone)]

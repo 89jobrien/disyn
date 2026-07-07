@@ -106,6 +106,8 @@ impl Orchestrator {
                 None => break,
             }
         }
+        // TODO: Include the specific violation messages in the error so callers can surface which
+        // rules failed rather than just the count.
         Err(Error::Verification {
             violations: self.verifier.verify(draft).violations.len(),
         })

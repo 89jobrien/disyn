@@ -3,6 +3,7 @@ use disyn_core::ports::{FactExtractor, ProposalEngine};
 use disyn_core::types::{CostEstimate, Facts, MemoryContext, Observation, PlanDraft, PlannedStep};
 use disyn_core::{Error, Result};
 
+// TODO: Parse confidence from the LLM response instead of using a fixed default.
 const DEFAULT_CONFIDENCE: f32 = 0.5;
 
 use crate::openai::OpenAiConfig;
@@ -49,6 +50,9 @@ impl FactExtractor for OllamaFactExtractor {
         let content = data["choices"][0]["message"]["content"]
             .as_str()
             .unwrap_or("{}");
+        // TODO: Return an error when content is missing or unparseable instead of silently
+        // falling back to an empty JSON object — silent fallback produces empty Facts with no
+        // indication that the model response was malformed.
         let parsed: serde_json::Value =
             serde_json::from_str(content).unwrap_or(serde_json::json!({}));
         Ok(Facts {

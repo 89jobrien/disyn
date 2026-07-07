@@ -32,6 +32,8 @@ impl FormalVerifier for NoOpFormalVerifier {
             .map(|gf| (gf.fact.id.as_str(), gf.value))
             .collect();
 
+        // TODO: Handle compound ClauseCombinator variants (And, Or, Not) — currently only Leaf
+        // clauses are evaluated; tree combinators are silently treated as always-satisfied.
         let violated: Vec<String> = spec
             .clauses
             .iter()
