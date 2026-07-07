@@ -1,0 +1,3 @@
+# disyn-core
+
+<!-- Crate documentation -->

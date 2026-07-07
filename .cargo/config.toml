@@ -1,5 +1,5 @@
 [alias]
-xtask = "run --manifest-path crates/disyn-xtask/Cargo.toml --"
+xtask = "run --package xtask --"
 
 [build]
 rustflags = ["-D", "warnings"]

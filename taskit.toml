@@ -1,0 +1,94 @@
+[workspace]
+crates = [
+  { dir = "crates/disyn-core", pkg = "disyn-core" },
+  { dir = "crates/disyn-symbolic", pkg = "disyn-symbolic" },
+  { dir = "crates/disyn-neural", pkg = "disyn-neural" },
+  { dir = "crates/disyn-memory", pkg = "disyn-memory" },
+  { dir = "crates/disyn-runtime", pkg = "disyn-runtime" },
+  { dir = "crates/disyn-app", pkg = "disyn-app" },
+]
+# offline_skip = "test(/.*network.*/)"
+
+
+[[workspace.propagation]]
+source = "disyn-core"
+dependents = ["disyn-symbolic", "disyn-neural", "disyn-memory", "disyn-runtime", "disyn-app"]
+
+[[workspace.propagation]]
+source = "disyn-memory"
+dependents = ["disyn-app"]
+
+[[workspace.propagation]]
+source = "disyn-neural"
+dependents = ["disyn-app"]
+
+[[workspace.propagation]]
+source = "disyn-runtime"
+dependents = ["disyn-app"]
+
+[[workspace.propagation]]
+source = "disyn-symbolic"
+dependents = ["disyn-app"]
+
+[protocol]
+# lockfile = "taskit-protocol.lock"
+
+[[protocol.surfaces]]
+name = "disyn-core-ports"
+path = "crates/disyn-core/src/ports.rs"
+
+[[protocol.surfaces]]
+name = "disyn-symbolic-rules"
+path = "crates/disyn-symbolic/src/rules.rs"
+
+# Coverage enforcement: run `taskit coverage` to check.
+#
+# [coverage]
+# crate_name = "my-crate"
+# threshold = 80.0
+
+[ci]
+# cruxfile = "Cruxfile"
+
+[[ci.steps]]
+name = "self-check"
+cmd = "self-check"
+gate = true
+
+[[ci.steps]]
+name = "fmt --check"
+cmd = "fmt --check"
+gate = false
+
+[[ci.steps]]
+name = "lint"
+cmd = "lint"
+gate = false
+
+[[ci.steps]]
+name = "compile-tests"
+cmd = "compile-tests"
+gate = false
+
+[[ci.steps]]
+name = "test"
+cmd = "test"
+gate = false
+
+[[ci.steps]]
+name = "check-deps"
+cmd = "check-deps"
+gate = false
+
+[[ci.steps]]
+name = "check-protocol-drift"
+cmd = "check-protocol-drift"
+gate = false
+
+# Git flow: main (stable) -> staging (work) -> release (publish) -> main
+# These are the defaults; uncomment to customize branch names.
+#
+# [flow]
+# main = "main"
+# staging = "staging"
+# release = "release"

@@ -6,6 +6,7 @@ members = [
     "crates/disyn-memory",
     "crates/disyn-runtime",
     "crates/disyn-app",
+    "xtask",
 ]
 exclude = ["crates/disyn-xtask"]
 resolver = "3"

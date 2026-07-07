@@ -16,15 +16,15 @@ orchestrator replans (re-proposes from scratch) once before erroring.
 
 ## Crates
 
-| Crate | Purpose |
-|---|---|
-| `disyn-core` | Domain types, port traits, error types |
+| Crate            | Purpose                                                              |
+| ---------------- | -------------------------------------------------------------------- |
+| `disyn-core`     | Domain types, port traits, error types                               |
 | `disyn-symbolic` | Rule engine, verifier, repair engine, 10-layer verification taxonomy |
-| `disyn-neural` | LLM adapters (OpenAI, Ollama) |
-| `disyn-memory` | State persistence, in-memory store, CatRAG graph types |
-| `disyn-runtime` | Budget manager (per-class tracking), telemetry, shell executor |
-| `disyn-app` | Composition root, orchestrator, CLI |
-| `disyn-xtask` | CI automation (`cargo xtask ci`) |
+| `disyn-neural`   | LLM adapters (OpenAI, Ollama)                                        |
+| `disyn-memory`   | State persistence, in-memory store, CatRAG graph types               |
+| `disyn-runtime`  | Budget manager (per-class tracking), telemetry, shell executor       |
+| `disyn-app`      | Composition root, orchestrator, CLI                                  |
+| `disyn-xtask`    | CI automation (`cargo xtask ci`)                                     |
 
 ## Dependency Graph
 
@@ -58,9 +58,7 @@ allowing any implementation to be swapped at construction time.
 Defined in `disyn-core::types`:
 
 ```
-Observation -> Facts -> MemoryContext -> PlanDraft (steps + rationale)
-  -> VerificationReport (violations) -> ApprovedPlan
-  -> ExecutionReport (step results + resource usage)
+Observation -> Facts -> MemoryContext -> PlanDraft -> VerificationReport -> ApprovedPlan -> ExecutionReport
 ```
 
 Each `PlannedStep` carries a `CostEstimate` (input/output tokens) and

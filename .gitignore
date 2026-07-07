@@ -1,5 +1,9 @@
 /target
 crates/disyn-xtask/target
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+.venv/
 .env
 .ctx/
 
@@ -13,3 +17,4 @@ crates/disyn-xtask/target
 .ctx/HANDOFF.hj.hj.state.json
 .ctx/.initialized
 # handoff-end
+.claude/worktrees/
