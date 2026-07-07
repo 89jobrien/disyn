@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "algorithm": "sha256-normalized-core-contract-v1",
+  "surfaces": [
+    {
+      "name": "disyn-core-ports",
+      "path": "crates/disyn-core/src/ports.rs",
+      "hash": "4f1c6a3ce98d80a7e7f5ef230263d356bde7359be43770bae6c49d134bf45a84"
+    },
+    {
+      "name": "disyn-symbolic-rules",
+      "path": "crates/disyn-symbolic/src/rules.rs",
+      "hash": "2c37c68ea3c4f9b49cc81dbdba43023b0b64b816400fcffe9f5b61ef3bbc8c6f"
+    }
+  ]
+}
