@@ -30,3 +30,6 @@ jobs:
 
       - name: Run CI pipeline
         run: cargo xtask ci --fail-fast
+
+      - name: Build and run example
+        run: cargo run --example pipeline
