@@ -16,6 +16,7 @@ use disyn_core::types::{
 use disyn_core::{Error, Result};
 use disyn_runtime::BudgetManager;
 use disyn_symbolic::{PatternRepairEngine, RuleSetVerifier};
+const VERIFY_OUTPUT_STRUCTURE_ACTION: &str = "verify:output-structure";
 
 // --- Stub FactExtractor ---------------------------------------------------
 
@@ -68,7 +69,7 @@ impl ProposalEngine for EchoProposal {
 
         steps.push(PlannedStep {
             idempotency_key: uuid::Uuid::new_v4(),
-            action: "verify:output-structure".into(),
+            action: VERIFY_OUTPUT_STRUCTURE_ACTION.into(),
             parameters: serde_json::json!({
                 "expected": {
                     "ok": "boolean"
@@ -124,31 +125,26 @@ struct PrintExecutor;
 #[async_trait]
 impl ActionExecutor for PrintExecutor {
     async fn execute(&self, plan: &ApprovedPlan) -> Result<ExecutionReport> {
-        let results = plan
-            .steps
-            .iter()
-            .enumerate()
-            .map(|(i, step)| {
-                println!("  [step {i}] {}", step.action);
-                let output = if step.action == "verify:output-structure" {
-                    serde_json::json!({
-                        "verified": true,
-                        "structure": {
-                            "ok": "boolean"
-                        }
-                    })
-                } else {
-                    serde_json::json!({ "ok": true })
-                };
-                StepResult {
-                    idempotency_key: step.idempotency_key,
-                    step_index: i,
-                    success: true,
-                    output,
-                    error: None,
+        let mut results = Vec::new();
+
+        for (i, step) in plan.steps.iter().enumerate() {
+            println!("  [step {i}] {}", step.action);
+            let result = if step.action == VERIFY_OUTPUT_STRUCTURE_ACTION {
+                match verify_prior_output_structure(step, &results) {
+                    Ok(output) => successful_step_result(step, i, output),
+                    Err(error) => StepResult {
+                        idempotency_key: step.idempotency_key,
+                        step_index: i,
+                        success: false,
+                        output: serde_json::json!({ "verified": false }),
+                        error: Some(error),
+                    },
                 }
-            })
-            .collect();
+            } else {
+                successful_step_result(step, i, serde_json::json!({ "ok": true }))
+            };
+            results.push(result);
+        }
 
         Ok(ExecutionReport {
             results,
@@ -162,6 +158,102 @@ impl ActionExecutor for PrintExecutor {
     }
 }
 
+fn successful_step_result(
+    step: &PlannedStep,
+    step_index: usize,
+    output: serde_json::Value,
+) -> StepResult {
+    StepResult {
+        idempotency_key: step.idempotency_key,
+        step_index,
+        success: true,
+        output,
+        error: None,
+    }
+}
+
+fn verify_prior_output_structure(
+    step: &PlannedStep,
+    prior_results: &[StepResult],
+) -> std::result::Result<serde_json::Value, String> {
+    if prior_results.is_empty() {
+        return Err("no prior step outputs to verify".into());
+    }
+
+    let expected = step
+        .parameters
+        .get("expected")
+        .and_then(serde_json::Value::as_object)
+        .ok_or_else(|| "verification step is missing an `expected` object".to_string())?;
+
+    for result in prior_results {
+        if !result.success {
+            return Err(format!(
+                "cannot verify output because step {} failed",
+                result.step_index
+            ));
+        }
+
+        verify_output_matches_schema(result.step_index, &result.output, expected)?;
+    }
+
+    Ok(serde_json::json!({
+        "verified": true,
+        "checked_steps": prior_results.len(),
+        "structure": step.parameters["expected"].clone()
+    }))
+}
+
+fn verify_output_matches_schema(
+    step_index: usize,
+    output: &serde_json::Value,
+    expected: &serde_json::Map<String, serde_json::Value>,
+) -> std::result::Result<(), String> {
+    let object = output
+        .as_object()
+        .ok_or_else(|| format!("step {step_index} output must be an object"))?;
+
+    for (field, expected_type) in expected {
+        let expected_type = expected_type.as_str().ok_or_else(|| {
+            format!("expected schema entry for field `{field}` must be a string type name")
+        })?;
+        let value = object.get(field).ok_or_else(|| {
+            format!("step {step_index} output is missing required field `{field}`")
+        })?;
+
+        if !value_matches_type(value, expected_type) {
+            return Err(format!(
+                "step {step_index} output field `{field}` expected {expected_type}, got {}",
+                describe_json_type(value)
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn value_matches_type(value: &serde_json::Value, expected_type: &str) -> bool {
+    match expected_type {
+        "array" => value.is_array(),
+        "boolean" => value.is_boolean(),
+        "null" => value.is_null(),
+        "number" => value.is_number(),
+        "object" => value.is_object(),
+        "string" => value.is_string(),
+        _ => false,
+    }
+}
+
+fn describe_json_type(value: &serde_json::Value) -> &'static str {
+    match value {
+        serde_json::Value::Array(_) => "array",
+        serde_json::Value::Bool(_) => "boolean",
+        serde_json::Value::Null => "null",
+        serde_json::Value::Number(_) => "number",
+        serde_json::Value::Object(_) => "object",
+        serde_json::Value::String(_) => "string",
+    }
+}
 fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
     const EXPECTED_STEP_COUNT: usize = 4;
 
@@ -189,6 +281,7 @@ fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
         let expected_output = if expected_index == EXPECTED_STEP_COUNT - 1 {
             serde_json::json!({
                 "verified": true,
+                "checked_steps": 3,
                 "structure": {
                     "ok": "boolean"
                 }
@@ -223,6 +316,83 @@ fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn verification_step() -> PlannedStep {
+        PlannedStep {
+            idempotency_key: uuid::Uuid::nil(),
+            action: VERIFY_OUTPUT_STRUCTURE_ACTION.into(),
+            parameters: serde_json::json!({
+                "expected": {
+                    "ok": "boolean"
+                }
+            }),
+            estimated_cost: CostEstimate {
+                class: Some(CostClass::Symbolic),
+                input_tokens: 0,
+                output_tokens: 0,
+            },
+        }
+    }
+
+    fn prior_result(output: serde_json::Value) -> StepResult {
+        StepResult {
+            idempotency_key: uuid::Uuid::nil(),
+            step_index: 0,
+            success: true,
+            output,
+            error: None,
+        }
+    }
+
+    #[test]
+    fn output_structure_verifier_accepts_expected_shape() {
+        let output = verify_prior_output_structure(
+            &verification_step(),
+            &[prior_result(serde_json::json!({ "ok": true }))],
+        )
+        .unwrap();
+
+        assert_eq!(
+            output,
+            serde_json::json!({
+                "verified": true,
+                "checked_steps": 1,
+                "structure": {
+                    "ok": "boolean"
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn output_structure_verifier_rejects_wrong_field_type() {
+        let error = verify_prior_output_structure(
+            &verification_step(),
+            &[prior_result(serde_json::json!({ "ok": "true" }))],
+        )
+        .unwrap_err();
+
+        assert_eq!(
+            error,
+            "step 0 output field `ok` expected boolean, got string"
+        );
+    }
+
+    #[test]
+    fn output_structure_verifier_rejects_missing_field() {
+        let error = verify_prior_output_structure(
+            &verification_step(),
+            &[prior_result(serde_json::json!({ "status": "ok" }))],
+        )
+        .unwrap_err();
+
+        assert_eq!(error, "step 0 output is missing required field `ok`");
+    }
 }
 // --- Null TelemetrySink --------------------------------------------------
 
