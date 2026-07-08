@@ -12,17 +12,40 @@ use uuid::Uuid;
 const MAX_VERIFY_ITERATIONS: usize = 3;
 
 pub struct Orchestrator {
-    pub fact_extractor: Box<dyn FactExtractor>,
-    pub proposal_engine: Box<dyn ProposalEngine>,
-    pub verifier: Box<dyn Verifier>,
-    pub repair_engine: Box<dyn RepairEngine>,
-    pub memory: Box<dyn MemoryStore>,
-    pub executor: Box<dyn ActionExecutor>,
-    pub telemetry: Box<dyn TelemetrySink>,
-    pub budget: BudgetManager,
+    fact_extractor: Box<dyn FactExtractor>,
+    proposal_engine: Box<dyn ProposalEngine>,
+    verifier: Box<dyn Verifier>,
+    repair_engine: Box<dyn RepairEngine>,
+    memory: Box<dyn MemoryStore>,
+    executor: Box<dyn ActionExecutor>,
+    telemetry: Box<dyn TelemetrySink>,
+    budget: BudgetManager,
 }
 
 impl Orchestrator {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        fact_extractor: Box<dyn FactExtractor>,
+        proposal_engine: Box<dyn ProposalEngine>,
+        verifier: Box<dyn Verifier>,
+        repair_engine: Box<dyn RepairEngine>,
+        memory: Box<dyn MemoryStore>,
+        executor: Box<dyn ActionExecutor>,
+        telemetry: Box<dyn TelemetrySink>,
+        budget: BudgetManager,
+    ) -> Self {
+        Self {
+            fact_extractor,
+            proposal_engine,
+            verifier,
+            repair_engine,
+            memory,
+            executor,
+            telemetry,
+            budget,
+        }
+    }
+
     pub async fn run(&mut self, obs: Observation) -> Result<ExecutionReport> {
         let trace_id = Uuid::new_v4();
 
@@ -67,22 +90,22 @@ impl Orchestrator {
     }
 
     fn verify_loop(&mut self, draft: &mut PlanDraft, trace_id: Uuid) -> Result<ApprovedPlan> {
+        let mut last_report = self.verifier.verify(draft);
         for _ in 0..MAX_VERIFY_ITERATIONS {
             let t = Instant::now();
-            let report = self.verifier.verify(draft);
             self.telemetry.emit(&SpanEvent {
                 kind: SpanKind::VerifierCheck,
                 trace_id,
                 parent_id: None,
                 duration_ms: t.elapsed().as_millis() as u64,
                 status: SpanStatus::Ok,
-                metadata: serde_json::json!({"violations": report.violations.len(), "passed": report.passed}),
+                metadata: serde_json::json!({"violations": last_report.violations.len(), "passed": last_report.passed}),
             });
 
-            if report.passed {
+            if last_report.passed {
                 return Ok(ApprovedPlan {
                     steps: draft.steps.clone(),
-                    verification: report,
+                    verification: last_report,
                 });
             }
             if !self.budget.can_repair() {
@@ -91,7 +114,7 @@ impl Orchestrator {
             self.budget.record_repair();
 
             let t = Instant::now();
-            let repaired = self.repair_engine.repair(draft, &report);
+            let repaired = self.repair_engine.repair(draft, &last_report);
             self.telemetry.emit(&SpanEvent {
                 kind: SpanKind::RepairApply,
                 trace_id,
@@ -102,14 +125,17 @@ impl Orchestrator {
             });
 
             match repaired {
-                Some(fixed) => *draft = fixed,
+                Some(fixed) => {
+                    *draft = fixed;
+                    last_report = self.verifier.verify(draft);
+                }
                 None => break,
             }
         }
         // TODO: Include the specific violation messages in the error so callers can surface which
         // rules failed rather than just the count.
         Err(Error::Verification {
-            violations: self.verifier.verify(draft).violations.len(),
+            violations: last_report.violations.len(),
         })
     }
 }

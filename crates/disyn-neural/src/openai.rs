@@ -13,28 +13,55 @@ pub struct OpenAiConfig {
     pub base_url: String,
 }
 
-pub struct OpenAiFactExtractor {
+/// Shared HTTP + auth layer for all OpenAI-backed components in this crate.
+struct OpenAiClient {
     config: OpenAiConfig,
-    client: reqwest::Client,
+    http: reqwest::Client,
+}
+
+impl OpenAiClient {
+    fn new(config: OpenAiConfig) -> Result<Self> {
+        if config.api_key.is_empty() {
+            return Err(Error::Inference("OPENAI_API_KEY not set".into()));
+        }
+        Ok(Self {
+            config,
+            http: reqwest::Client::new(),
+        })
+    }
+
+    async fn chat(&self, body: serde_json::Value) -> Result<serde_json::Value> {
+        let resp = self
+            .http
+            .post(format!("{}/chat/completions", self.config.base_url))
+            .bearer_auth(&self.config.api_key)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| Error::Inference(e.to_string()))?;
+        resp.json()
+            .await
+            .map_err(|e| Error::Inference(e.to_string()))
+    }
+}
+
+pub struct OpenAiFactExtractor {
+    client: OpenAiClient,
 }
 
 impl OpenAiFactExtractor {
-    pub fn new(config: OpenAiConfig) -> Self {
-        Self {
-            config,
-            client: reqwest::Client::new(),
-        }
+    pub fn new(config: OpenAiConfig) -> Result<Self> {
+        Ok(Self {
+            client: OpenAiClient::new(config)?,
+        })
     }
 }
 
 #[async_trait]
 impl FactExtractor for OpenAiFactExtractor {
     async fn extract(&self, observation: &Observation) -> Result<Facts> {
-        if self.config.api_key.is_empty() {
-            return Err(Error::Inference("OPENAI_API_KEY not set".into()));
-        }
         let body = serde_json::json!({
-            "model": self.config.model,
+            "model": self.client.config.model,
             "messages": [{
                 "role": "user",
                 "content": format!(
@@ -44,18 +71,7 @@ impl FactExtractor for OpenAiFactExtractor {
             }],
             "response_format": { "type": "json_object" },
         });
-        let resp = self
-            .client
-            .post(format!("{}/chat/completions", self.config.base_url))
-            .bearer_auth(&self.config.api_key)
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
-        let data: serde_json::Value = resp
-            .json()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
+        let data = self.client.chat(body).await?;
         let content = data["choices"][0]["message"]["content"]
             .as_str()
             .unwrap_or("{}");
@@ -77,48 +93,37 @@ impl FactExtractor for OpenAiFactExtractor {
 }
 
 pub struct OpenAiProposalEngine {
-    config: OpenAiConfig,
-    client: reqwest::Client,
+    client: OpenAiClient,
 }
 
 impl OpenAiProposalEngine {
-    pub fn new(config: OpenAiConfig) -> Self {
-        Self {
-            config,
-            client: reqwest::Client::new(),
-        }
+    pub fn new(config: OpenAiConfig) -> Result<Self> {
+        Ok(Self {
+            client: OpenAiClient::new(config)?,
+        })
     }
 }
 
 #[async_trait]
 impl ProposalEngine for OpenAiProposalEngine {
-    async fn propose(&self, facts: &Facts, _memory: &MemoryContext) -> Result<PlanDraft> {
-        if self.config.api_key.is_empty() {
-            return Err(Error::Inference("OPENAI_API_KEY not set".into()));
-        }
+    async fn propose(&self, facts: &Facts, memory: &MemoryContext) -> Result<PlanDraft> {
+        let memory_section = match &memory.summary {
+            Some(s) if !s.is_empty() => format!("\n\nPrior context:\n{s}"),
+            _ => String::new(),
+        };
         let body = serde_json::json!({
-            "model": self.config.model,
+            "model": self.client.config.model,
             "messages": [{
                 "role": "user",
                 "content": format!(
-                    "Given these facts, propose a plan: {:?}",
-                    facts.entities
+                    "Given these facts, propose a plan: {:?}{}",
+                    facts.entities,
+                    memory_section,
                 ),
             }],
             "response_format": { "type": "json_object" },
         });
-        let resp = self
-            .client
-            .post(format!("{}/chat/completions", self.config.base_url))
-            .bearer_auth(&self.config.api_key)
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
-        let data: serde_json::Value = resp
-            .json()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
+        let data = self.client.chat(body).await?;
         let content = data["choices"][0]["message"]["content"]
             .as_str()
             .unwrap_or("{}");
@@ -155,20 +160,14 @@ impl ProposalEngine for OpenAiProposalEngine {
 mod tests {
     use super::*;
 
-    #[tokio::test]
-    async fn openai_extractor_requires_api_key() {
+    #[test]
+    fn openai_extractor_requires_api_key() {
         let config = OpenAiConfig {
             api_key: String::new(),
             model: "gpt-4o".into(),
             base_url: "https://api.openai.com/v1".into(),
         };
-        let extractor = OpenAiFactExtractor::new(config);
-        let obs = Observation {
-            source: "test".into(),
-            payload: serde_json::json!({"q": "hi"}),
-            timestamp: chrono::Utc::now(),
-        };
-        let result = extractor.extract(&obs).await;
+        let result = OpenAiFactExtractor::new(config);
         assert!(result.is_err());
     }
 }

@@ -42,21 +42,21 @@ async fn main() -> disyn_core::Result<()> {
         )
     } else {
         (
-            Box::new(OpenAiFactExtractor::new(openai_cfg.clone())),
-            Box::new(OpenAiProposalEngine::new(openai_cfg)),
+            Box::new(OpenAiFactExtractor::new(openai_cfg.clone())?),
+            Box::new(OpenAiProposalEngine::new(openai_cfg)?),
         )
     };
 
-    let mut orchestrator = Orchestrator {
+    let mut orchestrator = Orchestrator::new(
         fact_extractor,
         proposal_engine,
-        verifier: Box::new(RuleSetVerifier::default()),
-        repair_engine: Box::new(PatternRepairEngine),
-        memory: Box::new(InMemoryStore::new()),
-        executor: Box::new(ShellExecutor::new()),
-        telemetry: Box::new(TracingSink::init()),
-        budget: BudgetManager::new(cfg.max_tokens, 1, MAX_REPAIR_ATTEMPTS, cfg.max_tokens),
-    };
+        Box::new(RuleSetVerifier::default()),
+        Box::new(PatternRepairEngine),
+        Box::new(InMemoryStore::new()),
+        Box::new(ShellExecutor::new()),
+        Box::new(TracingSink::init()),
+        BudgetManager::new(cfg.max_tokens, 1, MAX_REPAIR_ATTEMPTS, cfg.max_tokens),
+    );
 
     let input = std::io::read_to_string(std::io::stdin())
         .map_err(|e| disyn_core::Error::Other(e.to_string()))?;

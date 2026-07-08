@@ -1,0 +1,11 @@
+{
+  "head_sha": "3620d1bf869eea20dbb0c868de9dec4e1a5d9da7",
+  "crates": [
+    "disyn-app",
+    "disyn-core",
+    "disyn-memory",
+    "disyn-neural",
+    "disyn-runtime",
+    "disyn-symbolic"
+  ]
+}
