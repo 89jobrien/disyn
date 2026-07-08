@@ -240,6 +240,7 @@ dependencies = [
 name = "disyn-app"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "clap",
  "disyn-core",

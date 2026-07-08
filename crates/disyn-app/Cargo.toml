@@ -15,6 +15,7 @@ disyn-memory = { path = "../disyn-memory", version = "0.1.0" }
 disyn-neural = { path = "../disyn-neural", version = "0.1.0" }
 disyn-runtime = { path = "../disyn-runtime", version = "0.1.0" }
 disyn-symbolic = { path = "../disyn-symbolic", version = "0.1.0" }
+async-trait.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
 tokio.workspace = true

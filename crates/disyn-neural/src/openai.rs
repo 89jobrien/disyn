@@ -13,14 +13,15 @@ pub struct OpenAiConfig {
     pub base_url: String,
 }
 
-/// Shared HTTP + auth layer for all OpenAI-backed components in this crate.
-struct OpenAiClient {
-    config: OpenAiConfig,
+/// Shared HTTP + auth layer for all OpenAI-compatible adapters in this crate.
+pub(crate) struct OpenAiClient {
+    pub(crate) config: OpenAiConfig,
     http: reqwest::Client,
 }
 
 impl OpenAiClient {
-    fn new(config: OpenAiConfig) -> Result<Self> {
+    /// Construct with auth — rejects empty api_key (use for OpenAI).
+    pub(crate) fn new(config: OpenAiConfig) -> Result<Self> {
         if config.api_key.is_empty() {
             return Err(Error::Inference("OPENAI_API_KEY not set".into()));
         }
@@ -30,7 +31,15 @@ impl OpenAiClient {
         })
     }
 
-    async fn chat(&self, body: serde_json::Value) -> Result<serde_json::Value> {
+    /// Construct without auth — for providers like Ollama that need no key.
+    pub(crate) fn new_unauthenticated(config: OpenAiConfig) -> Self {
+        Self {
+            config,
+            http: reqwest::Client::new(),
+        }
+    }
+
+    pub(crate) async fn chat(&self, body: serde_json::Value) -> Result<serde_json::Value> {
         let resp = self
             .http
             .post(format!("{}/chat/completions", self.config.base_url))

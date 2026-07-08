@@ -1,23 +1,21 @@
 use async_trait::async_trait;
+use disyn_core::Result;
 use disyn_core::ports::{FactExtractor, ProposalEngine};
 use disyn_core::types::{CostEstimate, Facts, MemoryContext, Observation, PlanDraft, PlannedStep};
-use disyn_core::{Error, Result};
 
 // TODO: Parse confidence from the LLM response instead of using a fixed default.
 const DEFAULT_CONFIDENCE: f32 = 0.5;
 
-use crate::openai::OpenAiConfig;
+use crate::openai::{OpenAiClient, OpenAiConfig};
 
 pub struct OllamaFactExtractor {
-    config: OpenAiConfig,
-    client: reqwest::Client,
+    client: OpenAiClient,
 }
 
 impl OllamaFactExtractor {
     pub fn new(config: OpenAiConfig) -> Self {
         Self {
-            config,
-            client: reqwest::Client::new(),
+            client: OpenAiClient::new_unauthenticated(config),
         }
     }
 }
@@ -26,7 +24,7 @@ impl OllamaFactExtractor {
 impl FactExtractor for OllamaFactExtractor {
     async fn extract(&self, observation: &Observation) -> Result<Facts> {
         let body = serde_json::json!({
-            "model": self.config.model,
+            "model": self.client.config.model,
             "messages": [{
                 "role": "user",
                 "content": format!(
@@ -36,17 +34,7 @@ impl FactExtractor for OllamaFactExtractor {
             }],
             "response_format": { "type": "json_object" },
         });
-        let resp = self
-            .client
-            .post(format!("{}/chat/completions", self.config.base_url))
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
-        let data: serde_json::Value = resp
-            .json()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
+        let data = self.client.chat(body).await?;
         let content = data["choices"][0]["message"]["content"]
             .as_str()
             .unwrap_or("{}");
@@ -71,44 +59,37 @@ impl FactExtractor for OllamaFactExtractor {
 }
 
 pub struct OllamaProposalEngine {
-    config: OpenAiConfig,
-    client: reqwest::Client,
+    client: OpenAiClient,
 }
 
 impl OllamaProposalEngine {
     pub fn new(config: OpenAiConfig) -> Self {
         Self {
-            config,
-            client: reqwest::Client::new(),
+            client: OpenAiClient::new_unauthenticated(config),
         }
     }
 }
 
 #[async_trait]
 impl ProposalEngine for OllamaProposalEngine {
-    async fn propose(&self, facts: &Facts, _memory: &MemoryContext) -> Result<PlanDraft> {
+    async fn propose(&self, facts: &Facts, memory: &MemoryContext) -> Result<PlanDraft> {
+        let memory_section = match &memory.summary {
+            Some(s) if !s.is_empty() => format!("\n\nPrior context:\n{s}"),
+            _ => String::new(),
+        };
         let body = serde_json::json!({
-            "model": self.config.model,
+            "model": self.client.config.model,
             "messages": [{
                 "role": "user",
                 "content": format!(
-                    "Given these facts, propose a plan: {:?}",
-                    facts.entities
+                    "Given these facts, propose a plan: {:?}{}",
+                    facts.entities,
+                    memory_section,
                 ),
             }],
             "response_format": { "type": "json_object" },
         });
-        let resp = self
-            .client
-            .post(format!("{}/chat/completions", self.config.base_url))
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
-        let data: serde_json::Value = resp
-            .json()
-            .await
-            .map_err(|e| Error::Inference(e.to_string()))?;
+        let data = self.client.chat(body).await?;
         let content = data["choices"][0]["message"]["content"]
             .as_str()
             .unwrap_or("{}");
