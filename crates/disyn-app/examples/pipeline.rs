@@ -51,7 +51,7 @@ impl ProposalEngine for EchoProposal {
             .map(|s| format!(" (prior context: {s})"))
             .unwrap_or_default();
 
-        let steps = facts
+        let mut steps = facts
             .entities
             .iter()
             .map(|e| PlannedStep {
@@ -64,7 +64,22 @@ impl ProposalEngine for EchoProposal {
                     output_tokens: 5,
                 },
             })
-            .collect();
+            .collect::<Vec<_>>();
+
+        steps.push(PlannedStep {
+            idempotency_key: uuid::Uuid::new_v4(),
+            action: "verify:output-structure".into(),
+            parameters: serde_json::json!({
+                "expected": {
+                    "ok": "boolean"
+                }
+            }),
+            estimated_cost: CostEstimate {
+                class: Some(CostClass::Symbolic),
+                input_tokens: 5,
+                output_tokens: 0,
+            },
+        });
 
         Ok(PlanDraft {
             steps,
@@ -115,11 +130,21 @@ impl ActionExecutor for PrintExecutor {
             .enumerate()
             .map(|(i, step)| {
                 println!("  [step {i}] {}", step.action);
+                let output = if step.action == "verify:output-structure" {
+                    serde_json::json!({
+                        "verified": true,
+                        "structure": {
+                            "ok": "boolean"
+                        }
+                    })
+                } else {
+                    serde_json::json!({ "ok": true })
+                };
                 StepResult {
                     idempotency_key: step.idempotency_key,
                     step_index: i,
                     success: true,
-                    output: serde_json::json!({ "ok": true }),
+                    output,
                     error: None,
                 }
             })
@@ -138,7 +163,7 @@ impl ActionExecutor for PrintExecutor {
 }
 
 fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
-    const EXPECTED_STEP_COUNT: usize = 3;
+    const EXPECTED_STEP_COUNT: usize = 4;
 
     if report.results.len() != EXPECTED_STEP_COUNT {
         return Err(Error::Other(format!(
@@ -161,7 +186,18 @@ fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
             )));
         }
 
-        if result.output != serde_json::json!({ "ok": true }) {
+        let expected_output = if expected_index == EXPECTED_STEP_COUNT - 1 {
+            serde_json::json!({
+                "verified": true,
+                "structure": {
+                    "ok": "boolean"
+                }
+            })
+        } else {
+            serde_json::json!({ "ok": true })
+        };
+
+        if result.output != expected_output {
             return Err(Error::Other(format!(
                 "step {expected_index} had unexpected output: {}",
                 result.output
