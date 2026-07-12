@@ -1,0 +1,74 @@
+{
+  "cargo_lock_hash": "681d3c773e3c739c2cd4019ce03183f3038f18857b3dd8f6a86a1daa52f8f1e2",
+  "crates": {
+    "disyn-app": {
+      "hash": "f5830c2880b85d75d06d1330d07ee9c92447fce750f29fd9d7559818ac52d889",
+      "modules": {
+        "./crates/disyn-app/Cargo.toml": "48a5d7f23d384c5f4b2562d039112a14c77d555b9bca4d10bdd7118fe46e17cc",
+        "./crates/disyn-app/examples/pipeline.rs": "4d144a9fc103fbadc8a8aaaa21791acec605777aefc831fd768958f64ad04521",
+        "./crates/disyn-app/src/config.rs": "5219795e588bbbaad0ac8fd16ff37c19110285982f4e28732279f8ec30394991",
+        "./crates/disyn-app/src/lib.rs": "fa02d090d2546e2caea3742a1744e6142447546d75fd773682f33169383242bf",
+        "./crates/disyn-app/src/main.rs": "b7c0ed28e7f9309b0b7b261dc68a3c128c9e4aeefe886e44f6858b9bddde211b",
+        "./crates/disyn-app/src/orchestrator.rs": "f3ba1b5bb4b4d15c005e17432730230b91f8b120b56c7bc5b50aa5c1121c4a25"
+      }
+    },
+    "disyn-core": {
+      "hash": "68df9b3c4a22eadb8776642c0e646369f751cc7d28ee2b097b8389da06376b59",
+      "modules": {
+        "./crates/disyn-core/Cargo.toml": "dc13009830cdc23e8eff9075ce7055b968d0551f53d9fb707ecf30e1407eebba",
+        "./crates/disyn-core/src/error.rs": "e7c0d6e7ab3419a9f9cc2dd4986c895a5694300060abaa7a5b14640847700bbc",
+        "./crates/disyn-core/src/lib.rs": "a38d3732a0aa6b0ea4a8e406f4b8e67e3a69d67262d704e80093eb23c688d784",
+        "./crates/disyn-core/src/ports.rs": "2c2b571bc7cb040a153d89b4dd961f857d3896bd0fcb8bb5ba4d0e0932a83bb7",
+        "./crates/disyn-core/src/types.rs": "eb6a3bccf08ce263d83e5e514d2fa86c0cc65ef10688da7c48cc97456feae1af"
+      }
+    },
+    "disyn-memory": {
+      "hash": "a7219ee0c16ae550b24b7aca5c54b0d1de9185789d366287993fcb39ae59996b",
+      "modules": {
+        "./crates/disyn-memory/Cargo.toml": "ece7b486919ad48088753c950989e7c353b9a9a6004dc1dfd57ea35428352cfc",
+        "./crates/disyn-memory/src/in_memory.rs": "ff1751acd072b7e14098ecd9bc52c8753de5e0a21f08ef5a08cab68d181d609f",
+        "./crates/disyn-memory/src/lib.rs": "21c3cb86765d0fb4091c1839fa2c1b042abcf8844448f195ac8efaf69c0eb22a"
+      }
+    },
+    "disyn-neural": {
+      "hash": "e18995942ec2016cce224dcc7f3182aac6aace85594d459bb3d07381f069c38c",
+      "modules": {
+        "./crates/disyn-neural/Cargo.toml": "1b8ccdbd342753ba35f225178a66cefbdb0122412587572b643b4bd2c5437b6e",
+        "./crates/disyn-neural/src/lib.rs": "9421502a26b1454629905a0977347512ee8117fef2e40081fc1c5695389465bb",
+        "./crates/disyn-neural/src/ollama.rs": "f2f499d98e8aaa1b3af5106782b8a5d59e813c7ca4c55073f548c5e87d4fd652",
+        "./crates/disyn-neural/src/openai.rs": "f5eacd1e071ef51df6ad32f88643ff70ff6ba78f6d087142e4b1dada8ea5660c",
+        "./crates/disyn-neural/src/shared.rs": "093e755c2ea69c66b14c55b1145affb0d3f000921a2ca0e17b9f5e0f56be20d5"
+      }
+    },
+    "disyn-runtime": {
+      "hash": "ced934818e9d48ee2a5449b5e606d0d9d909f86279dd845d2063ed539a51271a",
+      "modules": {
+        "./crates/disyn-runtime/Cargo.toml": "6399860955dde05646c2182db2235f20caae89116ea0ee1331839172d59639b2",
+        "./crates/disyn-runtime/src/budget.rs": "3a83909e54906172c9173d8cc5cb19e2df41a923a5422f3a56215725cc160617",
+        "./crates/disyn-runtime/src/executor.rs": "de458d06b026261d8bc03701d21b8fa1daa519f6211b531deea0df9bb90a5199",
+        "./crates/disyn-runtime/src/lib.rs": "4fc31d632f3293560bcff880740442a651b95f1c40af2fd5c1b8bd1103dd21cf",
+        "./crates/disyn-runtime/src/telemetry.rs": "8e2d37eb18d62fe6173c688ccb05892fb6dd87e4595a1b16cc0b3ff92bcff786"
+      }
+    },
+    "disyn-symbolic": {
+      "hash": "5d112369e693cb6568826dcc643bba355a6fa653bcfaa758fe7446e4710a3473",
+      "modules": {
+        "./crates/disyn-symbolic/Cargo.toml": "bf75b7d9d4889b1cfece7671daf420cf63191e5b2bc38586fe2cbf43198a5145",
+        "./crates/disyn-symbolic/src/formal_verifier.rs": "caaa8b99292a1f44d877d3c295ef6df408133839efa3ff01e5c10b579bf6f3d0",
+        "./crates/disyn-symbolic/src/lib.rs": "c629d25356f0bb80af8cff70fec4a45d5c23d1fce057fb393e6083163d9d545a",
+        "./crates/disyn-symbolic/src/repair.rs": "b00cff6b0f81d663842d2449d0f672f53217fea841377ca6d6495d9d2ab5d607",
+        "./crates/disyn-symbolic/src/rules.rs": "f497d7c25f259d9bf7cdcf1211d66de96a37286f5b64da71c049f487347f10e9",
+        "./crates/disyn-symbolic/src/verifier.rs": "970e2ef9cced51aedeedeb6da92e5edcaa0285b7f0388a73ad5f534e9af59b99"
+      }
+    },
+    "xtask": {
+      "hash": "e00974a554cf17075810402af1ae233b99c8b60f33f41147c4324ad95c4d1779",
+      "modules": {
+        "./xtask/Cargo.toml": "33d90f78b6b4000482f199a0eb7e44e6ac821139a9d22be51eeb87ce7e4c2637",
+        "./xtask/src/lib.rs": "af493731921844fadb2dd93c35b7a873324997df82dafa829908de3f703399c6",
+        "./xtask/src/main.rs": "f4138a4d78f5076a48079d1b6e2acbf5c3cbf1dd3a01f1fd691fe117838703d8",
+        "./xtask/tests/dispatcher.rs": "703f9bbc7de00ef4bf80941460de4e1f0703c279296edc4a2f2e523f5947ad52"
+      }
+    }
+  }
+}

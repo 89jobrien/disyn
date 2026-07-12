@@ -14,6 +14,7 @@
 - [disyn-memory](./crates/disyn-memory.md)
 - [disyn-runtime](./crates/disyn-runtime.md)
 - [disyn-app](./crates/disyn-app.md)
+- [xtask](./crates/xtask.md)
 
 # Reference
 

@@ -1,4 +1,5 @@
 [workspace]
+# root = "/path/to/workspace"  # defaults to Cargo.toml location
 crates = [
   { dir = "crates/disyn-core", pkg = "disyn-core" },
   { dir = "crates/disyn-symbolic", pkg = "disyn-symbolic" },
@@ -6,6 +7,7 @@ crates = [
   { dir = "crates/disyn-memory", pkg = "disyn-memory" },
   { dir = "crates/disyn-runtime", pkg = "disyn-runtime" },
   { dir = "crates/disyn-app", pkg = "disyn-app" },
+  { dir = "xtask" },
 ]
 # offline_skip = "test(/.*network.*/)"
 
@@ -41,6 +43,10 @@ path = "crates/disyn-core/src/ports.rs"
 name = "disyn-symbolic-rules"
 path = "crates/disyn-symbolic/src/rules.rs"
 
+[[protocol.surfaces]]
+name = "xtask-lib"
+path = "xtask/src/lib.rs"
+
 # Coverage enforcement: run `taskit coverage` to check.
 #
 # [coverage]
@@ -48,7 +54,8 @@ path = "crates/disyn-symbolic/src/rules.rs"
 # threshold = 80.0
 
 [ci]
-# cruxfile = "Cruxfile"
+# cruxfile  = "Cruxfile"  # path to Cruxfile for crux-based pipelines
+# fail_fast = false        # stop on first failing step
 
 [[ci.steps]]
 name = "self-check"
@@ -85,10 +92,38 @@ name = "check-protocol-drift"
 cmd = "check-protocol-drift"
 gate = false
 
-# Git flow: main (stable) -> staging (work) -> release (publish) -> main
+# Metric thresholds for `taskit inspect`. CLI flags override these.
+#
+# [inspect]
+# max_clippy_warnings = 0
+# max_clippy_errors   = 0
+# max_test_failures   = 0
+# max_todo_fixme      = 20   # omit to skip the TODO/FIXME check
+
+# Default retention policy for `taskit clean`. CLI --older-than overrides.
+#
+# [clean]
+# older_than = "7d"  # use `cargo sweep`; omit to run `cargo clean`
+
+# Git flow: main -> develop (work) -> staging (integration) -> release (publish) -> main
 # These are the defaults; uncomment to customize branch names.
 #
 # [flow]
 # main = "main"
+# develop = "develop"
 # staging = "staging"
 # release = "release"
+
+[release]
+github_repo = "89jobrien/disyn"
+publish_order = [
+  "disyn-core",
+  "xtask",
+  "disyn-memory",
+  "disyn-neural",
+  "disyn-runtime",
+  "disyn-symbolic",
+  "disyn-app",
+]
+# skip_docs   = false  # skip `cargo doc` before publishing
+# allow_dirty = false  # publish with uncommitted changes

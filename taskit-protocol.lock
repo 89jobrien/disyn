@@ -11,6 +11,11 @@
       "name": "disyn-symbolic-rules",
       "path": "crates/disyn-symbolic/src/rules.rs",
       "hash": "2c37c68ea3c4f9b49cc81dbdba43023b0b64b816400fcffe9f5b61ef3bbc8c6f"
+    },
+    {
+      "name": "xtask-lib",
+      "path": "xtask/src/lib.rs",
+      "hash": "edba90f9703127622650d4f85e2004f554580594318b360d9469dbf3e1edd52b"
     }
   ]
 }

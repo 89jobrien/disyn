@@ -250,7 +250,6 @@ dependencies = [
  "disyn-symbolic",
  "serde_json",
  "tokio",
- "tracing",
  "tracing-subscriber",
  "uuid",
 ]
@@ -283,12 +282,9 @@ name = "disyn-neural"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "chrono",
  "disyn-core",
  "reqwest",
- "serde",
  "serde_json",
- "tokio",
  "uuid",
 ]
 
@@ -301,7 +297,6 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
- "uuid",
 ]
 
 [[package]]
