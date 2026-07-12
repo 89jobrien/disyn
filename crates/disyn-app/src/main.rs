@@ -9,7 +9,7 @@ use disyn_runtime::{BudgetManager, ShellExecutor, TracingSink};
 use disyn_symbolic::{PatternRepairEngine, RuleSetVerifier};
 
 use disyn_app::config::Config;
-use disyn_app::orchestrator::Orchestrator;
+use disyn_app::orchestrator::{Orchestrator, OrchestratorPorts};
 
 const MAX_REPAIR_ATTEMPTS: u32 = 3;
 
@@ -21,6 +21,7 @@ async fn main() -> disyn_core::Result<()> {
         .init();
 
     let cfg = Config::parse();
+    cfg.validate()?;
 
     let openai_cfg = OpenAiConfig {
         api_key: cfg.api_key.clone(),
@@ -48,13 +49,15 @@ async fn main() -> disyn_core::Result<()> {
     };
 
     let mut orchestrator = Orchestrator::new(
-        fact_extractor,
-        proposal_engine,
-        Box::new(RuleSetVerifier::default()),
-        Box::new(PatternRepairEngine),
-        Box::new(InMemoryStore::new()),
-        Box::new(ShellExecutor::new()),
-        Box::new(TracingSink::init()),
+        OrchestratorPorts {
+            fact_extractor,
+            proposal_engine,
+            verifier: Box::new(RuleSetVerifier::default()),
+            repair_engine: Box::new(PatternRepairEngine),
+            memory: Box::new(InMemoryStore::new()),
+            executor: Box::new(ShellExecutor::new(cfg.step_timeout_secs)),
+            telemetry: Box::new(TracingSink::init()),
+        },
         BudgetManager::new(cfg.max_tokens, 1, MAX_REPAIR_ATTEMPTS, cfg.max_tokens),
     );
 

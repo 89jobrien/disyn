@@ -1,18 +1,20 @@
 use async_trait::async_trait;
 use disyn_core::Result;
 use disyn_core::ports::{FactExtractor, ProposalEngine};
-use disyn_core::types::{CostEstimate, Facts, MemoryContext, Observation, PlanDraft, PlannedStep};
+use disyn_core::types::{Facts, MemoryContext, Observation, PlanDraft};
+
+use crate::openai::{OpenAiClient, OpenAiConfig};
+use crate::shared::{extract_content, memory_section, parse_plan_draft};
 
 // TODO: Parse confidence from the LLM response instead of using a fixed default.
 const DEFAULT_CONFIDENCE: f32 = 0.5;
-
-use crate::openai::{OpenAiClient, OpenAiConfig};
 
 pub struct OllamaFactExtractor {
     client: OpenAiClient,
 }
 
 impl OllamaFactExtractor {
+    #[must_use = "extractor must be used"]
     pub fn new(config: OpenAiConfig) -> Self {
         Self {
             client: OpenAiClient::new_unauthenticated(config),
@@ -35,14 +37,7 @@ impl FactExtractor for OllamaFactExtractor {
             "response_format": { "type": "json_object" },
         });
         let data = self.client.chat(body).await?;
-        let content = data["choices"][0]["message"]["content"]
-            .as_str()
-            .unwrap_or("{}");
-        // TODO: Return an error when content is missing or unparseable instead of silently
-        // falling back to an empty JSON object — silent fallback produces empty Facts with no
-        // indication that the model response was malformed.
-        let parsed: serde_json::Value =
-            serde_json::from_str(content).unwrap_or(serde_json::json!({}));
+        let parsed = extract_content(&data)?;
         Ok(Facts {
             entities: parsed["entities"]
                 .as_array()
@@ -63,6 +58,7 @@ pub struct OllamaProposalEngine {
 }
 
 impl OllamaProposalEngine {
+    #[must_use = "engine must be used"]
     pub fn new(config: OpenAiConfig) -> Self {
         Self {
             client: OpenAiClient::new_unauthenticated(config),
@@ -73,10 +69,6 @@ impl OllamaProposalEngine {
 #[async_trait]
 impl ProposalEngine for OllamaProposalEngine {
     async fn propose(&self, facts: &Facts, memory: &MemoryContext) -> Result<PlanDraft> {
-        let memory_section = match &memory.summary {
-            Some(s) if !s.is_empty() => format!("\n\nPrior context:\n{s}"),
-            _ => String::new(),
-        };
         let body = serde_json::json!({
             "model": self.client.config.model,
             "messages": [{
@@ -84,40 +76,12 @@ impl ProposalEngine for OllamaProposalEngine {
                 "content": format!(
                     "Given these facts, propose a plan: {:?}{}",
                     facts.entities,
-                    memory_section,
+                    memory_section(memory),
                 ),
             }],
             "response_format": { "type": "json_object" },
         });
         let data = self.client.chat(body).await?;
-        let content = data["choices"][0]["message"]["content"]
-            .as_str()
-            .unwrap_or("{}");
-        let parsed: serde_json::Value =
-            serde_json::from_str(content).unwrap_or(serde_json::json!({}));
-        let steps = parsed["steps"]
-            .as_array()
-            .map(|arr| {
-                arr.iter()
-                    .map(|s| PlannedStep {
-                        idempotency_key: uuid::Uuid::new_v4(),
-                        action: s["action"].as_str().unwrap_or("unknown").to_string(),
-                        parameters: s["parameters"].clone(),
-                        estimated_cost: CostEstimate {
-                            class: Some(disyn_core::types::CostClass::Neural),
-                            input_tokens: 0,
-                            output_tokens: 0,
-                        },
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
-        Ok(PlanDraft {
-            steps,
-            rationale: parsed["rationale"]
-                .as_str()
-                .unwrap_or("LLM-generated plan")
-                .to_string(),
-        })
+        parse_plan_draft(&data)
     }
 }

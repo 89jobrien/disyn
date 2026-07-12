@@ -13,6 +13,7 @@ pub struct BudgetManager {
 }
 
 impl BudgetManager {
+    #[must_use]
     pub fn new(
         max_tokens: u64,
         max_neural_replans: u32,

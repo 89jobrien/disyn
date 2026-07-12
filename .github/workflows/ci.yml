@@ -31,5 +31,8 @@ jobs:
       - name: Run CI pipeline
         run: cargo xtask ci --fail-fast
 
+      - name: Dependency audit
+        run: cargo deny check
+
       - name: Build and run example
         run: cargo run --example pipeline

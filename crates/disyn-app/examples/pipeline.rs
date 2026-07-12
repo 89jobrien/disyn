@@ -5,7 +5,7 @@
 
 use async_trait::async_trait;
 use chrono::Utc;
-use disyn_app::orchestrator::Orchestrator;
+use disyn_app::orchestrator::{Orchestrator, OrchestratorPorts};
 use disyn_core::ports::{
     ActionExecutor, FactExtractor, MemoryStore, ProposalEngine, SpanEvent, TelemetrySink,
 };
@@ -149,8 +149,8 @@ impl ActionExecutor for PrintExecutor {
         Ok(ExecutionReport {
             results,
             total_cost: ResourceUsage {
-                total_tokens: 50,
-                symbolic_tokens: 50,
+                total_tokens: EXPECTED_TOTAL_TOKENS,
+                symbolic_tokens: EXPECTED_SYMBOLIC_TOKENS,
                 neural_tokens: 0,
                 wall_time_ms: 1,
             },
@@ -254,68 +254,75 @@ fn describe_json_type(value: &serde_json::Value) -> &'static str {
         serde_json::Value::String(_) => "string",
     }
 }
-fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
-    const EXPECTED_STEP_COUNT: usize = 4;
+const EXPECTED_STEP_COUNT: usize = 4;
+const EXPECTED_TOTAL_TOKENS: u64 = 50;
+const EXPECTED_SYMBOLIC_TOKENS: u64 = 50;
 
+fn expected_step_output(step_index: usize) -> serde_json::Value {
+    if step_index == EXPECTED_STEP_COUNT - 1 {
+        serde_json::json!({
+            "verified": true,
+            "checked_steps": 3,
+            "structure": { "ok": "boolean" }
+        })
+    } else {
+        serde_json::json!({ "ok": true })
+    }
+}
+
+fn verify_step(expected_index: usize, result: &StepResult) -> Result<()> {
+    if result.step_index != expected_index {
+        return Err(Error::Other(format!(
+            "expected step index {expected_index}, got {}",
+            result.step_index
+        )));
+    }
+    if !result.success {
+        return Err(Error::Other(format!(
+            "step {expected_index} was not successful"
+        )));
+    }
+    let expected_output = expected_step_output(expected_index);
+    if result.output != expected_output {
+        return Err(Error::Other(format!(
+            "step {expected_index} had unexpected output: {}",
+            result.output
+        )));
+    }
+    if let Some(error) = &result.error {
+        return Err(Error::Other(format!(
+            "step {expected_index} returned unexpected error: {error}"
+        )));
+    }
+    Ok(())
+}
+
+fn verify_cost(report: &ExecutionReport) -> Result<()> {
+    let c = &report.total_cost;
+    if c.total_tokens != EXPECTED_TOTAL_TOKENS
+        || c.symbolic_tokens != EXPECTED_SYMBOLIC_TOKENS
+        || c.neural_tokens != 0
+        || c.wall_time_ms != 1
+    {
+        return Err(Error::Other(format!(
+            "unexpected total cost: {}",
+            serde_json::to_string(c).map_err(|e| Error::Other(e.to_string()))?
+        )));
+    }
+    Ok(())
+}
+
+fn verify_execution_report(report: &ExecutionReport) -> Result<()> {
     if report.results.len() != EXPECTED_STEP_COUNT {
         return Err(Error::Other(format!(
             "expected {EXPECTED_STEP_COUNT} execution results, got {}",
             report.results.len()
         )));
     }
-
-    for (expected_index, result) in report.results.iter().enumerate() {
-        if result.step_index != expected_index {
-            return Err(Error::Other(format!(
-                "expected step index {expected_index}, got {}",
-                result.step_index
-            )));
-        }
-
-        if !result.success {
-            return Err(Error::Other(format!(
-                "step {expected_index} was not successful"
-            )));
-        }
-
-        let expected_output = if expected_index == EXPECTED_STEP_COUNT - 1 {
-            serde_json::json!({
-                "verified": true,
-                "checked_steps": 3,
-                "structure": {
-                    "ok": "boolean"
-                }
-            })
-        } else {
-            serde_json::json!({ "ok": true })
-        };
-
-        if result.output != expected_output {
-            return Err(Error::Other(format!(
-                "step {expected_index} had unexpected output: {}",
-                result.output
-            )));
-        }
-
-        if let Some(error) = &result.error {
-            return Err(Error::Other(format!(
-                "step {expected_index} returned unexpected error: {error}"
-            )));
-        }
+    for (i, result) in report.results.iter().enumerate() {
+        verify_step(i, result)?;
     }
-
-    if report.total_cost.total_tokens != 50
-        || report.total_cost.symbolic_tokens != 50
-        || report.total_cost.neural_tokens != 0
-        || report.total_cost.wall_time_ms != 1
-    {
-        return Err(Error::Other(format!(
-            "unexpected total cost: {}",
-            serde_json::to_string(&report.total_cost).map_err(|e| Error::Other(e.to_string()))?
-        )));
-    }
-
-    Ok(())
+    verify_cost(report)
 }
 
 #[cfg(test)]
@@ -417,15 +424,17 @@ async fn main() -> disyn_core::Result<()> {
     };
 
     let mut orchestrator = Orchestrator::new(
-        Box::new(EchoExtractor),
-        Box::new(EchoProposal),
-        Box::new(RuleSetVerifier::default()),
-        Box::new(PatternRepairEngine),
-        Box::new(CannedMemory {
-            summary: "alice prefers express shipping".into(),
-        }),
-        Box::new(PrintExecutor),
-        Box::new(NullSink),
+        OrchestratorPorts {
+            fact_extractor: Box::new(EchoExtractor),
+            proposal_engine: Box::new(EchoProposal),
+            verifier: Box::new(RuleSetVerifier::default()),
+            repair_engine: Box::new(PatternRepairEngine),
+            memory: Box::new(CannedMemory {
+                summary: "alice prefers express shipping".into(),
+            }),
+            executor: Box::new(PrintExecutor),
+            telemetry: Box::new(NullSink),
+        },
         BudgetManager::new(10_000, 1, 3, 10_000),
     );
 

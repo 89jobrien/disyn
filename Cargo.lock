@@ -273,7 +273,9 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "disyn-core",
+ "serde_json",
  "tokio",
+ "uuid",
 ]
 
 [[package]]

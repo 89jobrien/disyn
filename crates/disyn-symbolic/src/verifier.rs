@@ -38,6 +38,7 @@ pub struct RuleSetVerifier {
 }
 
 impl RuleSetVerifier {
+    #[must_use]
     pub fn new() -> Self {
         let mut v = Self {
             rules: BTreeMap::new(),

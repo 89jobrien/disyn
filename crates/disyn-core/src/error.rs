@@ -5,8 +5,11 @@ pub enum Error {
     #[error("inference failed: {0}")]
     Inference(String),
 
-    #[error("verification failed: {violations} violations")]
-    Verification { violations: usize },
+    #[error("verification failed: {violations} violations — {}", messages.join("; "))]
+    Verification {
+        violations: usize,
+        messages: Vec<String>,
+    },
 
     #[error("repair exhausted after {attempts} attempts")]
     RepairExhausted { attempts: u32 },

@@ -1,4 +1,5 @@
 use clap::Parser;
+use disyn_core::{Error, Result};
 
 #[derive(Parser)]
 #[command(name = "disyn", version, about = "Hybrid agent pipeline")]
@@ -8,8 +9,6 @@ pub struct Config {
     pub provider: String,
 
     /// OpenAI API key
-    // TODO: Validate that api_key is non-empty at startup when provider == "openai" and emit a
-    // clear error rather than propagating a mid-run Inference error.
     #[arg(long, env = "OPENAI_API_KEY", default_value = "")]
     pub api_key: String,
 
@@ -20,4 +19,19 @@ pub struct Config {
     /// Max token budget
     #[arg(long, env = "DISYN_MAX_TOKENS", default_value = "10000")]
     pub max_tokens: u64,
+
+    /// Per-step shell timeout in seconds
+    #[arg(long, env = "DISYN_STEP_TIMEOUT_SECS", default_value = "30")]
+    pub step_timeout_secs: u64,
+}
+
+impl Config {
+    pub fn validate(&self) -> Result<()> {
+        if self.provider == "openai" && self.api_key.is_empty() {
+            return Err(Error::Other(
+                "OPENAI_API_KEY must be set when provider is 'openai'".into(),
+            ));
+        }
+        Ok(())
+    }
 }
