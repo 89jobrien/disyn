@@ -1,3 +1,5 @@
+//! Formal-spec synthesis and evaluation over grounded facts.
+
 use std::collections::HashMap;
 
 use disyn_core::ports::FormalVerifier;

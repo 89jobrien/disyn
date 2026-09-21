@@ -1,3 +1,5 @@
+//! Workspace CI task runner for formatting, linting, tests, and builds.
+
 use std::process::Command;
 
 fn run(label: &str, cmd: &str, args: &[&str]) {

@@ -113,7 +113,7 @@ repair gating neural replans.
 
 5. Verify:
 
-   ```
+   ```text
    cargo check --workspace          → compiles
    cargo clippy --workspace -- -D warnings  → zero warnings
    ```
@@ -309,7 +309,7 @@ repair gating neural replans.
 
 4. Verify:
 
-   ```
+   ```text
    cargo test -p disyn-core        → 2 tests pass
    cargo clippy -p disyn-core      → zero warnings
    ```
@@ -595,7 +595,7 @@ repair gating neural replans.
 
 5. Verify:
 
-   ```
+   ```text
    cargo test -p disyn-symbolic     → 3 tests pass
    cargo clippy -p disyn-symbolic   → zero warnings
    ```
@@ -681,7 +681,7 @@ repair gating neural replans.
 
 5. Verify:
 
-   ```
+   ```text
    cargo test -p disyn-memory      → 1 test passes
    cargo clippy -p disyn-memory    → zero warnings
    ```
@@ -912,7 +912,7 @@ repair gating neural replans.
 
 5. Verify:
 
-   ```
+   ```text
    cargo test -p disyn-neural      → 1 test passes
    cargo clippy -p disyn-neural    → zero warnings
    ```
@@ -1134,7 +1134,7 @@ repair gating neural replans.
 
 6. Verify:
 
-   ```
+   ```text
    cargo test -p disyn-runtime     → 3 tests pass
    cargo clippy -p disyn-runtime   → zero warnings
    ```
@@ -1341,7 +1341,7 @@ repair gating neural replans.
 
 4. Verify:
 
-   ```
+   ```text
    cargo build -p disyn-app        → compiles
    cargo clippy -p disyn-app       → zero warnings
    ```
@@ -1415,7 +1415,7 @@ repair gating neural replans.
 
 1. Write `.gitignore`:
 
-   ```
+   ```text
    /target
    .env
    ```

@@ -1,3 +1,5 @@
+//! Ollama adapters backed by its OpenAI-compatible chat API.
+
 use async_trait::async_trait;
 use disyn_core::Result;
 use disyn_core::ports::{FactExtractor, ProposalEngine};
@@ -14,6 +16,7 @@ pub struct OllamaFactExtractor {
 }
 
 impl OllamaFactExtractor {
+    /// Creates an unauthenticated Ollama fact extractor.
     #[must_use = "extractor must be used"]
     pub fn new(config: OpenAiConfig) -> Self {
         Self {
@@ -58,6 +61,7 @@ pub struct OllamaProposalEngine {
 }
 
 impl OllamaProposalEngine {
+    /// Creates an unauthenticated Ollama proposal engine.
     #[must_use = "engine must be used"]
     pub fn new(config: OpenAiConfig) -> Self {
         Self {

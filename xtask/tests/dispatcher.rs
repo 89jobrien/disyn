@@ -1,3 +1,5 @@
+//! Integration tests for taskit fallback and exit-code propagation.
+
 use std::{collections::VecDeque, ffi::OsStr, io};
 
 use xtask::{CommandInvocation, ProcessOutcome, ProcessRunner};

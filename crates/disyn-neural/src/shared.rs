@@ -1,3 +1,5 @@
+//! Shared prompt context and chat-response parsing helpers.
+
 use disyn_core::types::{CostClass, CostEstimate, MemoryContext, PlanDraft, PlannedStep};
 use disyn_core::{Error, Result};
 

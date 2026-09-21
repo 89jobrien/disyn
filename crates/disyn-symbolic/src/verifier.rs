@@ -1,3 +1,5 @@
+//! Layered rule-set verification with built-in action validation.
+
 use std::collections::BTreeMap;
 
 use disyn_core::ports::Verifier;
@@ -38,6 +40,7 @@ pub struct RuleSetVerifier {
 }
 
 impl RuleSetVerifier {
+    /// Creates a verifier containing the built-in non-empty-action rule.
     #[must_use]
     pub fn new() -> Self {
         let mut v = Self {
@@ -47,6 +50,7 @@ impl RuleSetVerifier {
         v
     }
 
+    /// Registers a rule under its verification layer.
     pub fn register(&mut self, rule: impl LayerRule + 'static) {
         self.rules
             .entry(rule.layer())

@@ -5,8 +5,19 @@ code in this repository.
 
 ## Build & Test
 
+`cargo xtask <task>` (workspace member `xtask/`) does not run gates itself —
+it shells out to the external `taskit` binary (`taskit <task>`, falling back
+to `cargo run -p taskit --`). The actual CI steps (self-check, fmt --check,
+lint, compile-tests, test, check-deps, check-protocol-drift) are defined in
+`taskit.toml` and `Cruxfile` at the repo root; `Cruxfile` wires those same
+`taskit` subcommands into a `disyn-ci` pipeline. `taskit-protocol.lock` locks
+the protocol surfaces (`disyn-core/src/ports.rs`, `disyn-symbolic/src/rules.rs`,
+`xtask/src/lib.rs`) against drift. `crates/disyn-xtask` is a legacy xtask
+crate excluded from the workspace (`Cargo.toml` `exclude`) — not what
+`cargo xtask` invokes; ignore it.
+
 ```sh
-cargo xtask ci              # fmt-check + clippy (-D warnings) + test + build
+cargo xtask ci              # delegates to `taskit ci`
 cargo build --workspace
 cargo test --workspace
 cargo test -p disyn-core     # single crate
@@ -14,15 +25,18 @@ cargo test -p disyn-core -- observation_round_trips  # single test
 ```
 
 Rust edition 2024, toolchain 1.88. `set_var`/`remove_var` require `unsafe {}`.
+Full command reference: `USAGE.md`. Release/publish flow (crates-io ->
+cratebox, `taskit release`) is configured in `promote.toml`.
 
 ## Architecture
 
-Hybrid symbolic+neural agent pipeline. Neural LLM proposals are validated and
+See `ARCHITECTURE.md` for the full crate/pipeline reference. Summary:
+hybrid symbolic+neural agent pipeline. Neural LLM proposals are validated and
 repaired by a symbolic rule engine before execution.
 
 ### Pipeline flow
 
-```
+```text
 Observation -> FactExtractor -> MemoryStore::retrieve -> ProposalEngine
   -> Verifier -> [RepairEngine loop, max 3] -> ApprovedPlan
   -> ActionExecutor -> ExecutionReport -> MemoryStore::persist
@@ -33,7 +47,7 @@ orchestrator replans (re-proposes from scratch) once before erroring.
 
 ### Crate dependency graph
 
-```
+```text
 disyn-core          (domain types, port traits, errors — no dependencies)
   disyn-symbolic    (Verifier + RepairEngine impls)
   disyn-neural      (ProposalEngine + FactExtractor impls via OpenAI/Ollama)

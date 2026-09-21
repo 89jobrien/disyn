@@ -1,3 +1,5 @@
+//! Bounded in-memory execution history with entity-overlap retrieval.
+
 use async_trait::async_trait;
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -15,6 +17,7 @@ pub struct InMemoryStore {
 }
 
 impl InMemoryStore {
+    /// Creates an empty execution-history store.
     pub fn new() -> Self {
         Self {
             episodes: Mutex::new(VecDeque::new()),

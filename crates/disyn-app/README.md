@@ -11,7 +11,7 @@ agent pipeline.
 This is the composition root — it wires all port implementations
 together and runs the full pipeline:
 
-```
+```text
 Observation -> FactExtractor -> MemoryStore::retrieve -> ProposalEngine
   -> Verifier -> [RepairEngine loop, max 3] -> ApprovedPlan
   -> ActionExecutor -> ExecutionReport -> MemoryStore::persist

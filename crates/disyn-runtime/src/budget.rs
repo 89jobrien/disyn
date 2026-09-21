@@ -1,3 +1,5 @@
+//! Tracks token consumption and repair and replan attempt limits.
+
 use disyn_core::types::{CostEstimate, ResourceUsage};
 
 pub struct BudgetManager {
@@ -13,6 +15,7 @@ pub struct BudgetManager {
 }
 
 impl BudgetManager {
+    /// Creates an unused budget with token and retry limits.
     #[must_use]
     pub fn new(
         max_tokens: u64,
@@ -33,35 +36,42 @@ impl BudgetManager {
         }
     }
 
+    /// Returns whether the estimated tokens fit within the total budget.
     pub fn can_afford(&self, estimate: &CostEstimate) -> bool {
         let needed = u64::from(estimate.input_tokens) + u64::from(estimate.output_tokens);
         self.used_tokens + needed <= self.max_tokens
     }
 
+    /// Returns whether the estimate fits both neural and total token budgets.
     pub fn can_afford_neural(&self, estimate: &CostEstimate) -> bool {
         let needed = u64::from(estimate.input_tokens) + u64::from(estimate.output_tokens);
         self.used_neural_tokens + needed <= self.max_neural_tokens
             && self.used_tokens + needed <= self.max_tokens
     }
 
+    /// Adds measured resource usage to the running totals.
     pub fn record(&mut self, usage: &ResourceUsage) {
         self.used_tokens += usage.total_tokens;
         self.used_neural_tokens += usage.neural_tokens;
         self.used_symbolic_tokens += usage.symbolic_tokens;
     }
 
+    /// Returns whether another repair attempt is available.
     pub fn can_repair(&self) -> bool {
         self.repair_attempts < self.max_repair_attempts
     }
 
+    /// Records one repair attempt.
     pub fn record_repair(&mut self) {
         self.repair_attempts += 1;
     }
 
+    /// Returns whether another neural replan is available.
     pub fn can_replan(&self) -> bool {
         self.neural_replans < self.max_neural_replans
     }
 
+    /// Records one neural replan.
     pub fn record_replan(&mut self) {
         self.neural_replans += 1;
     }

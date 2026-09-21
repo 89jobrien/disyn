@@ -5,7 +5,7 @@ and repaired by a symbolic rule engine before execution.
 
 ## Pipeline Flow
 
-```
+```text
 Observation -> FactExtractor -> MemoryStore::retrieve -> ProposalEngine
   -> Verifier -> [RepairEngine loop, max 3] -> ApprovedPlan
   -> ActionExecutor -> ExecutionReport -> MemoryStore::persist
@@ -28,7 +28,7 @@ orchestrator replans (re-proposes from scratch) once before erroring.
 
 ## Dependency Graph
 
-```
+```text
 disyn-core          (domain types, port traits, errors -- no dependencies)
   disyn-symbolic    (Verifier + RepairEngine impls)
   disyn-neural      (ProposalEngine + FactExtractor impls via OpenAI/Ollama)
@@ -57,7 +57,7 @@ allowing any implementation to be swapped at construction time.
 
 Defined in `disyn-core::types`:
 
-```
+```text
 Observation -> Facts -> MemoryContext -> PlanDraft -> VerificationReport -> ApprovedPlan -> ExecutionReport
 ```
 

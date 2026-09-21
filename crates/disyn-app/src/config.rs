@@ -1,3 +1,5 @@
+//! Command-line configuration and provider-specific validation.
+
 use clap::Parser;
 use disyn_core::{Error, Result};
 
@@ -26,6 +28,7 @@ pub struct Config {
 }
 
 impl Config {
+    /// Validates requirements for the selected inference provider.
     pub fn validate(&self) -> Result<()> {
         if self.provider == "openai" && self.api_key.is_empty() {
             return Err(Error::Other(

@@ -22,7 +22,7 @@ repaired by a symbolic rule engine before execution.
 
 ### Pipeline flow
 
-```
+```text
 Observation -> FactExtractor -> MemoryStore::retrieve -> ProposalEngine
   -> Verifier -> [RepairEngine loop, max 3] -> ApprovedPlan
   -> ActionExecutor -> ExecutionReport -> MemoryStore::persist
@@ -33,7 +33,7 @@ orchestrator replans (re-proposes from scratch) once before erroring.
 
 ### Crate dependency graph
 
-```
+```text
 disyn-core          (domain types, port traits, errors — no dependencies)
   disyn-symbolic    (Verifier + RepairEngine impls)
   disyn-neural      (ProposalEngine + FactExtractor impls via OpenAI/Ollama)

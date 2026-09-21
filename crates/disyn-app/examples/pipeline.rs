@@ -409,7 +409,7 @@ impl TelemetrySink for NullSink {
     fn emit(&self, _event: &SpanEvent) {}
 }
 
-// -------------------------------------------------------------------------
+// Run the assembled pipeline on a representative checkout observation.
 
 #[tokio::main]
 async fn main() -> disyn_core::Result<()> {

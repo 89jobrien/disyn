@@ -1,3 +1,5 @@
+//! Command-line entry point that runs a stdin observation through the agent pipeline.
+
 use clap::Parser;
 use disyn_core::types::Observation;
 use disyn_memory::InMemoryStore;

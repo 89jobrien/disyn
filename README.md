@@ -10,7 +10,7 @@ logic before execution.
 
 ## Pipeline
 
-```
+```text
 Observation -> FactExtractor -> MemoryStore::retrieve -> ProposalEngine
   -> Verifier -> [RepairEngine loop, max 3] -> ApprovedPlan
   -> ActionExecutor -> ExecutionReport -> MemoryStore::persist
@@ -33,7 +33,7 @@ orchestrator replans (re-proposes from scratch) once before erroring.
 
 ### Dependency graph
 
-```
+```text
 disyn-core
   disyn-symbolic
   disyn-neural

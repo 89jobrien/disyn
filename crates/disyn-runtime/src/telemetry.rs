@@ -1,3 +1,5 @@
+//! Tracing-backed emission of pipeline span events.
+
 use disyn_core::ports::{SpanEvent, TelemetrySink};
 
 pub struct TracingSink;
@@ -9,6 +11,7 @@ impl Default for TracingSink {
 }
 
 impl TracingSink {
+    /// Creates a telemetry sink for the active tracing subscriber.
     pub fn init() -> Self {
         Self
     }

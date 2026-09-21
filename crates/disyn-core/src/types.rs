@@ -1,3 +1,5 @@
+//! Serializable domain models exchanged between pipeline stages.
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 

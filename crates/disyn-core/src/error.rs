@@ -1,3 +1,5 @@
+//! Errors shared across pipeline ports and adapters.
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]

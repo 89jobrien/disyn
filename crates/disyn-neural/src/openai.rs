@@ -1,9 +1,17 @@
+//! Authenticated adapters for OpenAI-compatible chat completion APIs.
+
 use async_trait::async_trait;
 use disyn_core::ports::{FactExtractor, ProposalEngine};
 use disyn_core::types::{Facts, MemoryContext, Observation, PlanDraft};
 use disyn_core::{Error, Result};
 
 use crate::shared::{extract_content, memory_section, parse_plan_draft};
+
+// TODO(bamlish): FactExtractor and ProposalEngine below both request json_object mode and then
+// dig through the response by hand (extract_content, parse_plan_draft, the as_array/filter_map
+// probing in extract). Facts and PlanDraft are exactly typed BAML classes — modelling them in
+// bamlish would remove the manual field probing and resolve the fixed-confidence TODO below,
+// since confidence would come back as a declared field on the response.
 
 // TODO: Parse confidence from the LLM response instead of using a fixed default.
 const DEFAULT_CONFIDENCE: f32 = 0.5;
@@ -61,6 +69,7 @@ pub struct OpenAiFactExtractor {
 }
 
 impl OpenAiFactExtractor {
+    /// Creates a fact extractor and validates that an API key is present.
     #[must_use = "extractor must be used"]
     pub fn new(config: OpenAiConfig) -> Result<Self> {
         Ok(Self {
@@ -105,6 +114,7 @@ pub struct OpenAiProposalEngine {
 }
 
 impl OpenAiProposalEngine {
+    /// Creates a proposal engine and validates that an API key is present.
     #[must_use = "engine must be used"]
     pub fn new(config: OpenAiConfig) -> Result<Self> {
         Ok(Self {

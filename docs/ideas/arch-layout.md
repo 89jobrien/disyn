@@ -29,7 +29,7 @@ into core.
 
 ### Dependency graph
 
-```
+```text
 disyn-core
   disyn-symbolic   (Verifier, RepairEngine, FormalVerifier)
   disyn-neural     (ProposalEngine, FactExtractor)
@@ -274,7 +274,7 @@ stochastic replanning.
 
 ### Repair loop
 
-```
+```text
 PlanDraft -> Verifier -> [RepairEngine x3] -> ApprovedPlan
   (on failure, if budget allows) -> replan once -> Verifier -> ...
 ```

@@ -2,11 +2,11 @@
 
 [disyn](./README.md)
 
-# Architecture
+## Architecture
 
 - [Overview](./architecture/overview.md)
 
-# Crates
+## Crates
 
 - [disyn-core](./crates/disyn-core.md)
 - [disyn-symbolic](./crates/disyn-symbolic.md)
@@ -16,7 +16,7 @@
 - [disyn-app](./crates/disyn-app.md)
 - [xtask](./crates/xtask.md)
 
-# Reference
+## Reference
 
 - [Configuration](./reference/configuration.md)
 - [CI Pipeline](./reference/ci-pipeline.md)

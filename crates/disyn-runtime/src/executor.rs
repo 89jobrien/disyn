@@ -1,3 +1,5 @@
+//! Shell-backed execution of approved plan steps with per-step timeouts.
+
 use std::time::Instant;
 
 use async_trait::async_trait;
@@ -10,6 +12,7 @@ pub struct ShellExecutor {
 }
 
 impl ShellExecutor {
+    /// Creates a shell executor with the given per-step timeout.
     #[must_use]
     pub fn new(step_timeout_secs: u64) -> Self {
         Self { step_timeout_secs }

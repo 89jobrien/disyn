@@ -1,3 +1,5 @@
+//! Coordinates proposal, verification, repair, execution, and persistence.
+
 use std::time::Instant;
 
 use disyn_core::ports::{
@@ -27,10 +29,12 @@ pub struct Orchestrator {
 }
 
 impl Orchestrator {
+    /// Creates an orchestrator from its pipeline ports and resource budget.
     pub fn new(ports: OrchestratorPorts, budget: BudgetManager) -> Self {
         Self { ports, budget }
     }
 
+    /// Runs one observation through the pipeline and persists its execution report.
     pub async fn run(&mut self, obs: Observation) -> Result<ExecutionReport> {
         let trace_id = Uuid::new_v4();
 

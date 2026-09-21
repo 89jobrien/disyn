@@ -1,3 +1,5 @@
+//! Symbolic plan verification, formal checking, and repair adapters.
+
 pub mod formal_verifier;
 pub mod repair;
 pub mod rules;

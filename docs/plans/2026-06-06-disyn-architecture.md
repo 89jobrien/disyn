@@ -16,7 +16,7 @@ Providers: OpenAI (primary), Ollama (local validation/testing).
 
 ### Crate Topology (7 crates)
 
-```
+```text
 disyn/
 ├── Cargo.toml                # virtual manifest, resolver 3
 ├── rust-toolchain.toml       # pin 1.88, clippy + rustfmt
@@ -33,7 +33,7 @@ disyn/
 
 ### Dependency Graph
 
-```
+```text
 disyn-app → disyn-symbolic → disyn-core
           → disyn-neural   → disyn-core
           → disyn-memory   → disyn-core
@@ -94,7 +94,7 @@ Supporting types: `PlannedStep`, `Episode`, `Violation`, `Severity`,
 
 ### Repair Gate Flow
 
-```
+```text
 PlanDraft → Verifier::verify()
   → passed → ApprovedPlan
   → failed → RepairEngine::repair() (up to 3 attempts, re-verify each)

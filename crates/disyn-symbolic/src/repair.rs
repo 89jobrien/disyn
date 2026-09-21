@@ -1,3 +1,5 @@
+//! Plan repair that removes steps with blocking violations.
+
 use disyn_core::ports::RepairEngine;
 use disyn_core::types::{PlanDraft, PlannedStep, Severity, VerificationReport};
 

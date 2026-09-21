@@ -56,9 +56,9 @@ fn task_ci() {
     taskit(&["ci"])
 }
 fn task_pre_commit() {
-    taskit(&["pre-commit"])
+    taskit(&["check", "pre-commit"])
 }
 fn task_pre_push() {
-    taskit(&["pre-push"])
+    taskit(&["check", "pre-push"])
 }
 // --- end taskit-managed ---

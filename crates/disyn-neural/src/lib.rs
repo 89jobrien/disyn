@@ -1,3 +1,5 @@
+//! OpenAI-compatible fact extraction and plan proposal adapters.
+
 pub mod ollama;
 pub mod openai;
 mod shared;
